@@ -5,15 +5,12 @@ const { executeStep } = require('../utils/action');
 const Assertions = require('../utils/assertions');
 require('dotenv').config();
 
-exports.GamePage = class GamePage {
+exports.CardCasinoPage = class CardCasinoPage {
   constructor(page) {
     this.page = page;
     this.assertions = new Assertions();
     this.body = page.locator('body');
-    this.demoLobbyButton = this.page.getByRole('link', { name: 'Demo Lobby' });
-    this.teenPattiT20GameCard = (page) =>
-      page.getByText('Teen Patti T20').first();
-    this.playNowButton = (page) => page.locator("//div[text()='Play Now']");
+  
     this.dealerUsernameInputField = (page) =>
       page.getByPlaceholder('Enter your username');
 
@@ -23,22 +20,18 @@ exports.GamePage = class GamePage {
     this.dealerLoginButton = (page) =>
       page.getByRole('button', { name: 'Login' });
 
-    this.teenPattiT20GameInDealerPortal = (page) =>
-      page.getByRole('link', { name: 'TeenpattiT20' });
+    this.cardCasinoPageDealerPage = (page) =>
+      page.locator("//a[normalize-space()='Casino32'])[1]");
 
-    this.playerA = (page) => page.getByText('a1.98');
-    this.playerB = (page) => page.getByText('b1.98');
-    this.AllARed = (page) => page.getByText('All A Red1.98');
-    this.AllBRed = (page) => page.getByText('All B Red1.98');
-    this.AllABlack = (page) => page.getByText('All A Black1.98');
-    this.AllBBlack = (page) => page.getByText('All B Black1.98');
-    this.lessThan21A = (page) => page.locator('#lessThan21A div').first();
-    this.greaterThan21A = (page) => page.locator('#greaterThan21A div').nth(2);
-    this.equalTo21A = (page) => page.getByText('1421').first();
-    this.lessThan21B = (page) => page.locator('#lessThan21B div').first();
-    this.greaterThan21B = (page) => page.locator('#greaterThan21B div').nth(2);
-    this.equalTo21B = (page) => page.getByText('1421').nth(1);
-    this.bonus3Plus3 = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[5]");
+    this.player8Back = (page) => page.locator("(//div[@class='relative w-10 h-10'])[1]");
+    this.player8Lay = (page) => page.locator("(//div[@id='player8-lay'])[1]");
+    this.player9Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[3]");
+    this.player9Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[4]");
+    this.player10Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[5]");
+    this.player10Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
+    this.player11Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
+    this.player11Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
+  
     this.pleaseWaitForNextRoundMessage = (page) =>
       page.getByText('Please wait for next round');
     this.balanceAmount = page.locator(
@@ -471,6 +464,11 @@ exports.GamePage = class GamePage {
       balanceAmount,
       `Validate balance amount ${balanceAmount}`
     );
+}
+async goto() {
+  await executeStep(this.page, 'navigate', 'Navigate to the game page', [
+    process.env.CARDCASINOURL,
+  ]);
 }
   // async voidRoundButtonClick()
 };
