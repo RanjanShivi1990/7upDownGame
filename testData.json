@@ -30,19 +30,17 @@
       "Bonus3plus3" : ["H5","H1","S8","D1","C6","C1"]
 }
   },
-"sevenUpDown" :{
-  "cardSets" : {
-        "Even": ["H2"], 
-        "Odd": ["D5"],  
-        "Up": ["S10"] ,   
-        "Down": ["S6"] , 
-        "Seven": ["D7"], 
-        "Diamond": ["D9"], 
-        "Heart" : ["H9"], 
-        "Redcards" : ["H1"],
-        "Spades" : ["S11"], 
-        "Clubs" : ["C1"], 
-        "Blackcards ": ["C2"]
+"cardCasino":{
+    "betOption":{
+      "Player8Back":["D13","S7","C6","H7"],
+      "Player8Lay":["D7","S13","C6","H7"],
+      "Player9Back":["D8","S13","C7","H6"],
+      "Player9Lay":["D13","S7","C8","H6"],
+      "Player10Back":["D6","S7","C13","H7"],
+      "Player10Lay":["D8","S6","C7","H13"],
+      "Player11Back":["D8","S7","C6","S13"],
+      "Player11Lay":["D7","S6","C13","H7"]
+
 }
 }
 }
