@@ -21,23 +21,31 @@ exports.CardCasinoPage = class CardCasinoPage {
       page.getByRole('button', { name: 'Login' });
 
     this.cardCasinoPageDealerPage = (page) =>
-      page.locator("//a[normalize-space()='Casino32'])[1]");
+      page.getByRole('link', { name: 'Casino32' });
 
-    this.player8Back = (page) => page.locator("(//div[@class='relative w-10 h-10'])[1]");
-    this.player8Lay = (page) => page.locator("(//div[@id='player8-lay'])[1]");
-    this.player9Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[3]");
-    this.player9Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[4]");
-    this.player10Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[5]");
-    this.player10Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
-    this.player11Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
-    this.player11Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
-  
-    this.pleaseWaitForNextRoundMessage = (page) =>
-      page.getByText('Please wait for next round');
-    this.balanceAmount = page.locator(
-      "//div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
+    this.player8Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[1]");
+    this.player8Lay = this.page.locator("(//div[@id='player8-lay'])[1]");
+    this.player9Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[3]");
+    this.player9Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[4]");
+    this.player10Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[5]");
+    this.player10Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
+    this.player11Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
+    this.player11Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
+    this.chip100 = this.page
+      .locator("//div[contains(@class,'coin')]//span[text()='100'] ")
+      .first();
+      this.chip500 = this.page
+      .locator("//div[contains(@class,'coin')]//span[text()='500'] ")
+      .first();
+      this.chip10000 = this.page
+      .locator("//div[contains(@class,'coin')]//span[text()='10K'] ")
+      .first();
 
-    this.betTimeText = (page) => page.getByText('Bet Time');
+    this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
+    this.balanceAmount = this.page.locator(
+      "(//span[contains(@class,'flex items-center gap-1')])[2]");
+
+    this.betTimeText = this.page.getByText('Bet Time');
     this.suspendedText = (page) => page.getByText('SUSPENDED');
     this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
     this.cardUpdated = (page) => page.getByText('card updated');
@@ -49,12 +57,9 @@ exports.CardCasinoPage = class CardCasinoPage {
         `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
       );
     this.drawMessage = (page) => page.getByText('Draw');
-    this.lastWinAmount = (page) =>
-      page.locator(`//span[text()='Last Win']//span/span`);
-    this.totalBetAmount = (page) =>
-      page.locator("//span[text()='Total ']//span/span");
-    this.totalWinAmount = (page) =>
-      page.locator("//span[text()='Total ']//span");
+    this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
+    this.totalBetAmount =this.page.locator("(//span[contains(@class,'flex items-center gap-1')])[1]");
+    this.totalWinAmount =this.page.locator("//span[text()='Total ']//span");
     this.newGameButton = (page) =>
       page.getByRole('button', { name: 'New Game' });
 
@@ -62,7 +67,7 @@ exports.CardCasinoPage = class CardCasinoPage {
       page.getByRole('button', { name: 'Void Round' });
     this.confirmVoidRound = (page) =>
       page.getByRole('button', { name: 'Confirm' });
-    this.congratulationsMessage = (page) =>
+    this.congratulationsMessage =this.
       page
         .locator('div')
         .filter({ hasText: 'CongratulationsYou Won ₹' })
@@ -77,28 +82,29 @@ exports.CardCasinoPage = class CardCasinoPage {
   }
   async validatingCongratulationsMessage(page) {
     await this.assertions.assertElementVisible(
-      await this.congratulationsMessage(page),
+      await this.congratulationsMessage,
       'Validate congratulations message is visible'
     );
   }
   async validatingCongratulationsMessageShouldNotDisplay(page) {
     await this.assertions.assertElementNotVisible(
-      await this.congratulationsMessage(page),
+      await this.congratulationsMessage,
       'Validate congratulations message should not displayed'
     );
   }
 
   async validateBetAmount(page, betAmount) {
     await this.assertions.assertElementToContainText(
-      await this.totalBetAmount(page),
+      await this.totalBetAmount,
       betAmount,
       `Validate bet amount ${betAmount}`
     );
   }
+  
 
   async validateTotalWinAmount(page, winAmount) {
     await this.assertions.assertElementToContainText(
-      await this.totalWinAmount(page),
+      await this.totalWinAmount,
       winAmount,
       `Validate bet amount is ${winAmount}`
     );
@@ -107,44 +113,31 @@ exports.CardCasinoPage = class CardCasinoPage {
   async validateBetAmountForOneBetMarketAtOnce(page, betAmount, market) {
     let winAmountMultiplier;
     switch (market) {
-      case 'Market A':
-        winAmountMultiplier = 1.98;
+      case 'Player 8 Back':
+        winAmountMultiplier = 12.2;
         break;
-      case 'Market B':
-        winAmountMultiplier = 1.98;
+      case 'Player 8 Lay':
+        winAmountMultiplier = 2;
         break;
-      case 'All A Black':
-        winAmountMultiplier = 1.98;
+      case 'Player 9 Back':
+        winAmountMultiplier = 5.95;
         break;
-      case 'All B Black':
-        winAmountMultiplier = 1.98;
+      case 'Player 9 Lay':
+        winAmountMultiplier = 2;
         break;
-      case 'All A Red':
-        winAmountMultiplier = 1.98;
+      case 'Player 10 Back':
+        winAmountMultiplier = 3.2;
         break;
-      case 'All B Red':
-        winAmountMultiplier = 1.98;
+      case 'Player 10 Lay':
+        winAmountMultiplier = 2;
         break;
-      case 'Less than 21 Player A':
-        winAmountMultiplier = 1.95;
+      case 'Player 11 Back':
+        winAmountMultiplier = 2.08;
         break;
-      case 'Greater than 21 Player A':
-        winAmountMultiplier = 1.95;
+      case 'Player 11 Lay':
+        winAmountMultiplier = 2;
         break;
-      case 'Equal to 21 Player A':
-        winAmountMultiplier = 14;
-        break;
-      case 'Less than 21 Player B':
-        winAmountMultiplier = 1.95;
-        break;
-      case 'Greater than 21 Player B':
-        winAmountMultiplier = 1.95;
-        break;
-      case 'Equal to 21 Player B':
-        winAmountMultiplier = 14;
-        break;
-        case 'bonus 3 plus 3':
-          winAmountMultiplier = 7;
+      
       }
 
     let winAmount = parseInt(betAmount * winAmountMultiplier);
@@ -161,18 +154,14 @@ exports.CardCasinoPage = class CardCasinoPage {
 
   async validateTotalBetAmountForMultipleMarkets(page, betAmount, markets) {
     const marketMultipliers = {
-      'Market A': 1.98,
-      'Market B': 1.98,
-      'All A Black': 1.98,
-      'All B Black': 1.98,
-      'All A Red': 1.98,
-      'All B Red': 1.98,
-      'Less than 21 Player A': 1.95,
-      'Greater than 21 Player A': 1.95,
-      'Equal to 21 Player A': 14,
-      'Less than 21 Player B': 1.95,
-      'Greater than 21 Player B': 1.95,
-      'Equal to 21 Player B': 14,
+      'Player 8 Back': 12.2,
+      'Player 8 Lay': 12.7,
+      'Player 9 Back': 5.95,
+      'Player 9 Lay': 5.45,
+      'Player 10 Back': 3.2,
+      'Player 10 Lay': 2.45,
+      'Player 11 Back': 2.08,
+      'Player 11 Lay': 1.18,
     };
 
     let totalWinAmount = 0;
@@ -230,11 +219,7 @@ exports.CardCasinoPage = class CardCasinoPage {
       );
     }
   }
-  async navigateToAuroLobby() {
-    await executeStep(this.page, 'navigate', 'Navigate to the game page', [
-      process.env.NEWMARKETT20URL,
-    ]);
-  }
+  
 
   async navigateToDelearDevAndLogin(page) {
     await executeStep(page, 'navigate', 'Navigate to the game page', [
@@ -260,128 +245,47 @@ exports.CardCasinoPage = class CardCasinoPage {
     );
   }
   async readingWinAmount(page) {
-    let winAmount = await this.lastWinAmount(page);
+    let winAmount = await this.lastWinAmount;
     let winAmountText = await winAmount.innerText();
     winAmountText = await winAmountText.replace(',', '').replace('₹', '');
     console.log('winAmount', winAmountText);
     return winAmountText;
   }
 
-  async clickOnDemoLobbyButton() {
-    await executeStep(
-      this.demoLobbyButton,
-      'click',
-      `Click on demo lobby button`,
-      []
-    );
-  }
-
-  async selectingTeenpattiGameAndClickOnPlayNowButton(page) {
-    await executeStep(
-      this.teenPattiT20GameCard(page),
-      'click',
-      `Click on teen patti button`,
-      []
-    );
-    await executeStep(
-      this.playNowButton(page),
-      'click',
-      `Click on Play Now button`,
-      []
-    );
-  }
-
-  async clickOnSpecificMarket(page, market) {
-    switch (market) {
-      case 'Market A':
-        await executeStep(this.playerA(page), 'click', 'Clicking on Market A');
+  async clickOnSpecificMarket(page, player) {
+    switch (player) {
+      case 'Player 8 Back':
+        await executeStep(this.player8Back, 'click', 'Clicking on Player 8 Back');
         break;
-      case 'Market B':
-        await executeStep(this.playerB(page), 'click', 'Clicking on Market A');
+      case 'Player 8 Lay':
+        await executeStep(this.player8Lay, 'click', 'Clicking on Player 8 Lay');
         break;
-      case 'All A Black':
-        await executeStep(
-          this.AllABlack(page),
-          'click',
-          'Clicking on All A Black'
-        );
+      case 'Player 9 Back':
+        await executeStep(this.player9Back, 'click', 'Clicking on Player 9 Back');
         break;
-      case 'All B Black':
-        await executeStep(
-          this.AllBBlack(page),
-          'click',
-          'Clicking on All B Black'
-        );
+      case 'Player 9 Lay':
+        await executeStep(this.player9Lay, 'click', 'Clicking on Player 9 Lay');
         break;
-      case 'All A Red':
-        await executeStep(this.AllARed(page), 'click', 'Clicking on All A Red');
+      case 'Player 10 Back':
+        await executeStep(this.player10Back,'click','Clicking on Player 10 Back');
         break;
-      case 'All B Red':
-        await executeStep(this.AllBRed(page), 'click', 'Clicking on All B Red');
+      case 'Player 10 Lay':
+        await executeStep(this.player10Lay,'click','Clicking on Player 10 Lay');
         break;
-      case 'Less than 21 Player A':
-        await executeStep(
-          this.lessThan21A(page),
-          'click',
-          'Clicking on Less than 21 For Player A'
-        );
+      case 'Player 11 Back':
+        await executeStep(this.player11Back,'click','Clicking on Player 11 Back');
         break;
-      case 'Greater than 21 Player A':
-        await executeStep(
-          this.greaterThan21A(page),
-          'click',
-          'Clicking on greater than 21 For Player A'
-        );
-        break;
-      case 'Equal to 21 Player A':
-        await executeStep(
-          this.equalTo21A(page),
-          'click',
-          'Clicking on equal to 21 For Player A'
-        );
-        break;
-      case 'Less than 21 Player B':
-        await executeStep(
-          this.lessThan21B(page),
-          'click',
-          'Clicking on Less than 21 For Player B'
-        );
-        break;
-      case 'Greater than 21 Player B':
-        await executeStep(
-          this.greaterThan21B(page),
-          'click',
-          'Clicking on greater than 21 For Player B'
-        );
-        break;
-      case 'Equal to 21 Player B':
-        await executeStep(
-          this.equalTo21B(page),
-          'click',
-          'Clicking on equal to 21 For Player B'
-        );
-        break;
-      case '3 Plus 3 Bonus':
-        await executeStep(
-          this.bonus3Plus3(page),
-          'click',
-          'Clicking on 3 plus 3 bonus'
-        );
+      case 'Player 11 Lay':
+        await executeStep(this.player11Lay,'click','Clicking on Player 11 Lay');
         break;
     }
   }
 
-  async navigatingToTeenPattiT20NewMarketGameAndStartNewGame(page) {
-    await this.navigateToDelearDevAndLogin(page);
-    await this.clickOnDealerTeenPattiT20Game(page);
-    await page.reload();
-    await this.clickNewGame(page);
-  }
-  async clickOnDealerTeenPattiT20Game(page) {
+  async clickOnDealerCardCasinoGame(page) {
     await executeStep(
-      this.teenPattiT20GameInDealerPortal(page),
+      this.cardCasinoPageDealerPage(page),
       'click',
-      'Click on teen patti in dealer portal',
+      'Click on CardCasinoPage in dealer portal',
       []
     );
   }
@@ -428,7 +332,7 @@ exports.CardCasinoPage = class CardCasinoPage {
   async selectingCardsInLoop(page, cardsArray) {
     await allure.step(`Selecting cards ${cardsArray}`, async () => {
       await this.assertions.assertElementNotVisible(
-        this.betTimeText(page),
+        this.betTimeText,
         'Bet Time Text should be hidden'
       );
       await this.assertions.assertElementVisible(
@@ -456,11 +360,11 @@ exports.CardCasinoPage = class CardCasinoPage {
   }
   async validateBalanceAmount() {
     await this.assertions.assertElementVisible(
-      this.balanceAmount(page),
+      this.balanceAmount,
       'Balance Amount should be visible'
     );
     await this.assertions.assertElementToContainText(
-      await this.balanceAmount(page),
+      await this.balanceAmount,
       balanceAmount,
       `Validate balance amount ${balanceAmount}`
     );
@@ -470,5 +374,90 @@ async goto() {
     process.env.CARDCASINOURL,
   ]);
 }
-  // async voidRoundButtonClick()
+async clickNumber(value) {
+  const numberLocator = this.page
+    .locator('div')
+    .filter({ hasText: new RegExp(`^${value}$`) })
+    .nth(4);
+  await executeStep(numberLocator, 'click', `Click on number ${value}`, []);
+}
+
+async clickBetAmount(amount) {
+  const betAmountLocator = this.page
+    .locator('div')
+    .filter({ hasText: new RegExp(`^${amount}$`) })
+    .nth(1);
+  await executeStep(
+    betAmountLocator,
+    'click',
+    `Click on bet amount ${amount}`,
+    []
+  );
+}
+async expectTextInBody(text) {
+  await executeStep(
+    this.body,
+    'toContainText',
+    `Expect text in body: ${text}`,
+    [text]
+  );
+}
+async clickOnUndo() {
+  await expect(this.undoButton).toBeVisible();
+  await executeStep(this.undoButton, 'click', 'Click undo button');
+}
+
+async validateTotalBetAmountForLay() {
+  const totalBetText = await this.page.textContent(this.totalBetAmount); // Fetch total bet display
+  return parseFloat(totalBetText);
+}
+async validateBetAmountForLay(page, expectedBetAmount) {
+    const totalBetText = await this.page.totalBetAmount.textContent();
+    const numericBetAmount = totalBetText.replace(/[^\d]/g, '');
+    const actualBetAmount = parseInt(numericBetAmount, 10); 
+    expect(actualBetAmount).toBe(expectedBetAmount, `Validate bet amount ${expectedBetAmount}`);
+}
+async clickingOnDoubleButtonInLoop(numberOfLoop) {
+  for (let i = 0; i < numberOfLoop; i++) {
+    await executeStep(this.doublButton, 'click', 'click on double button');
+  }
+}
+  async bettingOnSpecificMarketInLoop(market, numberOfLoop) {
+    for (let i = 0; i < numberOfLoop; i++) {
+      await this.clickOnSpecificMarket(market);
+    }
+  }
+  async readingBalanceAmount() {
+    let balanceAmount = await this.balanceAmount.innerText();
+    balanceAmount = balanceAmount.replaceAll(',', '').replaceAll('₹', '');
+    console.log('balanceAmount', balanceAmount);
+    return balanceAmount;
+  }
+async validateMaximumAllowedBet() {
+  await this.clickNumber(100);
+  await this.clickBetAmount("10K");
+  await this.bettingOnSpecificMarketInLoop('Player 8 Back',10);
+  await this.clickingOnDoubleButtonInLoop(2);
+  await this.assertions.assertElementVisible(
+    await this.MarketProfitLimitMesg,
+    'Max Profit Limit is 600000 should be visible'
+  );
+  await this.bettingOnSpecificMarketInLoop('Player 10 Back', 21);
+  await this.assertions.assertElementVisible(
+    await this.MarketExceedsLimitMesg,
+    'Bet amount exceeds the maximum bet limit should be visible'
+  );
+  await this.bettingOnSpecificMarketInLoop('Player 11 Lay', 21);
+  await this.assertions.assertElementVisible(
+    await this.MarketExceedsLimitMesg,
+    'Bet amount exceeds the maximum bet limit should be visible'
+  );
+}
+}
+await this.bettingOnSpecificMarketBeforeTimmerStart((page, player));
+  await this.assertions.assertElementVisible(
+    await this.clickOnSpecificMarket(cardCasinoPage,
+      'Player 9 Back');
+    'Bet amount exceeds the maximum bet limit should be visible'
+  );
 };
