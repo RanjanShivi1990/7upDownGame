@@ -68,7 +68,7 @@ class Assertions {
     await allure.step(description, async () => {
       expect(text).toContain(elementText, {
         timeout: parseInt(process.env.EXTRALARGEWAIT),
-      });
+      }); 
     });
   }
   async assertElementIsDisabled(element, description) {

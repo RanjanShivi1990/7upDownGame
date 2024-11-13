@@ -22,8 +22,16 @@ exports.CardCasinoPage = class CardCasinoPage {
 
     this.cardCasinoPageDealerPage = (page) =>
       page.getByRole('link', { name: 'Casino32' });
-
-    this.player8Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[1]");
+    this.MarketExceedsLimitMesg = this.page.getByText(
+      'Bet amount exceeds the maximum bet limit'
+    );
+    this.MarketProfitLimitMesg = this.page.getByText(
+      'Max Profit Limit is 600000'
+    );
+    this.MarketMaxBetLimitMesg = this.page.getByText(
+      'Max bet Limit is Exceeded'
+    )
+    this.player8Back = this.page.locator("#player8-back");
     this.player8Lay = this.page.locator("(//div[@id='player8-lay'])[1]");
     this.player9Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[3]");
     this.player9Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[4]");
@@ -31,6 +39,14 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.player10Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
     this.player11Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
     this.player11Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
+    this.doublButton = this.page.locator("(//span[normalize-space()='double'])[1]");
+    this.undoButton = this.page.locator("(//span[normalize-space()='undo'])[1]");
+    this.closeLayGameRule =this.
+      page.locator("(//*[name()='path'][@fill-rule='evenodd'])[12]");
+    this.player9BackMarketChipContainer = (chipAmount) =>
+      this.player9Back.getByText(chipAmount);
+    this.player11LayMarketChipContainer = (chipAmount) =>
+      this.player11Lay.getByText(chipAmount);
     this.chip100 = this.page
       .locator("//div[contains(@class,'coin')]//span[text()='100'] ")
       .first();
@@ -252,7 +268,7 @@ exports.CardCasinoPage = class CardCasinoPage {
     return winAmountText;
   }
 
-  async clickOnSpecificMarket(page, player) {
+  async clickOnSpecificMarket(player) {
     switch (player) {
       case 'Player 8 Back':
         await executeStep(this.player8Back, 'click', 'Clicking on Player 8 Back');
@@ -422,42 +438,44 @@ async clickingOnDoubleButtonInLoop(numberOfLoop) {
     await executeStep(this.doublButton, 'click', 'click on double button');
   }
 }
-  async bettingOnSpecificMarketInLoop(market, numberOfLoop) {
-    for (let i = 0; i < numberOfLoop; i++) {
-      await this.clickOnSpecificMarket(market);
-    }
-  }
   async readingBalanceAmount() {
     let balanceAmount = await this.balanceAmount.innerText();
     balanceAmount = balanceAmount.replaceAll(',', '').replaceAll('₹', '');
     console.log('balanceAmount', balanceAmount);
     return balanceAmount;
   }
+  async bettingOnSpecificPlayerInLoop(player, numberOfLoop) {
+    for (let i = 0; i < numberOfLoop; i++) {
+      await this.clickOnSpecificMarket(player);
+    }
+  }
 async validateMaximumAllowedBet() {
   await this.clickNumber(100);
   await this.clickBetAmount("10K");
-  await this.bettingOnSpecificMarketInLoop('Player 8 Back',10);
-  await this.clickingOnDoubleButtonInLoop(2);
+  await this.bettingOnSpecificPlayerInLoop('Player 11 Back', 4);
+  await this.clickingOnDoubleButtonInLoop(3);
+  await this.assertions.assertElementVisible(
+    await this.MarketMaxBetLimitMesg,
+    'Max bet Limit is Exceeded should be visible'
+  );
+  await this.bettingOnSpecificPlayerInLoop('Player 11 Back', 5);
+  await this.assertions.assertElementVisible(
+    await this.MarketExceedsLimitMesg,
+    'Bet amount exceeds the maximum bet limit'
+  );
+  await this.bettingOnSpecificPlayerInLoop('Player 8 Back',6);
   await this.assertions.assertElementVisible(
     await this.MarketProfitLimitMesg,
     'Max Profit Limit is 600000 should be visible'
   );
-  await this.bettingOnSpecificMarketInLoop('Player 10 Back', 21);
-  await this.assertions.assertElementVisible(
-    await this.MarketExceedsLimitMesg,
-    'Bet amount exceeds the maximum bet limit should be visible'
-  );
-  await this.bettingOnSpecificMarketInLoop('Player 11 Lay', 21);
-  await this.assertions.assertElementVisible(
-    await this.MarketExceedsLimitMesg,
-    'Bet amount exceeds the maximum bet limit should be visible'
-  );
 }
 }
-await this.bettingOnSpecificMarketBeforeTimmerStart((page, player));
+
+
+/*await this.bettingOnSpecificMarketBeforeTimmerStart((page, player));
   await this.assertions.assertElementVisible(
     await this.clickOnSpecificMarket(cardCasinoPage,
       'Player 9 Back');
     'Bet amount exceeds the maximum bet limit should be visible'
   );
-};
+};*/

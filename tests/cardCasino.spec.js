@@ -23,7 +23,6 @@ test('TC_01, Validate bet placement on Back option for Player8', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-      cardCasinoPage,
       'Player 8 Back'
     );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -53,7 +52,6 @@ test('TC_02, Validate bet placement on Lay option for Player8', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-      cardCasinoPage,
       'Player 8 Lay'
       );
       await cardCasinoPage.validateBetAmountForLay(cardCasinoPage, '1270');
@@ -82,7 +80,6 @@ test('TC_03 10, Validate bet placement on Back option for Player9', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-        cardCasinoPage,
         'Player 9 Back'
         );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -112,7 +109,6 @@ test('TC_04, Validate bet placement on Lay option for Player9', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-          cardCasinoPage,
           'Player 9 Lay'
             );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -139,7 +135,6 @@ test('TC_05, Validate bet placement on Back option for Player10', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-        cardCasinoPage,
         'Player 10 Back'
         );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -169,7 +164,6 @@ test('TC_06, Validate bet placement on Lay option for Player10', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-            cardCasinoPage,
             'Player 10 Lay'
             );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -196,7 +190,6 @@ test('TC_06, Validate bet placement on Lay option for Player10', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-          cardCasinoPage,
           'Player 11 Back'
           );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -227,7 +220,6 @@ test('TC_08, Validate bet placement on Lay option for Player11', async ({
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
     await cardCasinoPage.clickOnSpecificMarket(
-        cardCasinoPage,
         'Player 11 Lay'
         );
     await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
@@ -249,7 +241,6 @@ test('TC_09 Validate Select the Chip functionality', async ({ page , context, })
     await cardCasinoPage.expectTextInBody('100');
     await expect(await cardCasinoPage.chip100).toBeVisible();
     await cardCasinoPage.clickOnSpecificMarket(
-      cardCasinoPage,
       'Player 9 Back'
       );
     });
@@ -266,11 +257,9 @@ test('TC_11, Verify Ability to Place Multiple Bets', async ({
   await dealerDevPage.reload();
   await cardCasinoPage.clickNewGame(dealerDevPage);
   await cardCasinoPage.clickOnSpecificMarket(
-        cardCasinoPage,
         'Player 8 Back'
       );
   await cardCasinoPage.clickOnSpecificMarket(
-        cardCasinoPage,
         'Player 9 Back'
       );
   await cardCasinoPage.validateBetAmount(cardCasinoPage, '200');
@@ -286,4 +275,85 @@ test('TC_11, Verify Ability to Place Multiple Bets', async ({
         ['Player 8 Back']
       );
     });
+
+test('TC_22 24 Verify double & undo button functionality for bets', async ({
+  page,
+  context,
+}) => {
+  cardCasinoPage = new CardCasinoPage(page);
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await cardCasinoPage.clickOnSpecificMarket(
+    'Player 9 Back'
+  );
+  await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
+  await cardCasinoPage.clickingOnDoubleButtonInLoop(2);
+  await expect(await cardCasinoPage.player9BackMarketChipContainer('100')).not.toBeVisible();
+  await expect(await cardCasinoPage.player9BackMarketChipContainer('400')).toBeVisible();
+  await cardCasinoPage.clickOnUndo();
+  await expect(await cardCasinoPage.player9BackMarketChipContainer('400')).not.toBeVisible();
+  await expect(await cardCasinoPage.player9BackMarketChipContainer('200')).toBeVisible();
+    });    
+
+test('TC_14 15 Maximum Bet Limit Exceeded', async ({
+      page,
+      context,
+    }) => {
+  cardCasinoPage = new CardCasinoPage(page);
   
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await cardCasinoPage.validateMaximumAllowedBet();
+  await cardCasinoPage.clickOnSpecificMarket(
+    'Player 9 Back');
+  await cardCasinoPage.waitForTimeout(
+      dealerDevPage,
+      parseInt(process.env.BET_TIMEOUT),
+      'waiting for bet time to complete'
+      );
+
+test('TC_25 26 Verify Correct Payout for Winning Hand', async ({
+  page,
+  context,
+  }) => {
+  cardCasinoPage = new CardCasinoPage(page);
+  let balanceAmountBeforeBet = await cardCasinoPage.readingBalanceAmount();
+  //console.log(balanceAmount, 'balanceAmount');
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await cardCasinoPage.clickOnSpecificMarket(
+    'Player 9 Back'
+  );
+  await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
+  await cardCasinoPage.waitForTimeout(
+    dealerDevPage,
+    parseInt(process.env.BET_TIMEOUT),
+    'waiting for bet time to complete'
+  );
+  let balanceAmountAfterBetting = await cardCasinoPage.readingBalanceAmount();
+  //console.log(balanceAmountAfterBetting, 'balanceAmountAfterBetting');
+  await expect(balanceAmount - 100).toBe(parseFloat(balanceAmountAfterBetting));
+  await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player9Back);
+  await cardCasinoPage.validatingCongratulationsMessage();
+  let balanceAmountAfterWinning = await cardCasinoPage.readingBalanceAmount();
+  console.log(balanceAmountAfterWinning, 'balanceAmountAfterWinning');
+  let lastWinAmount = 100 * 5.95;
+  console.log(
+    parseFloat(balanceAmountAfterBetting) + parseFloat(lastWinAmount)
+  );
+  await expect(parseFloat(balanceAmountAfterWinning)).toBe(
+      parseFloat(balanceAmountAfterBetting) + parseFloat(winningAmount)
+  );
+  });
