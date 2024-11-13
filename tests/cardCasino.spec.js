@@ -319,7 +319,7 @@ test('TC_14 15 Maximum Bet Limit Exceeded', async ({
       parseInt(process.env.BET_TIMEOUT),
       'waiting for bet time to complete'
       );
-
+    });
 test('TC_25 26 Verify Correct Payout for Winning Hand', async ({
   page,
   context,
