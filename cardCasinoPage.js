@@ -31,7 +31,12 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.player10Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
     this.player11Back = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
     this.player11Lay = (page) => page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
-  
+    this.player8BackMarketChipContainer = (chipAmount) =>
+      this.player8Back.getByText(chipAmount);
+    this.player10BackMarketChipContainer = (chipAmount) =>
+      this.player10Back.getByText(chipAmount);
+    this.player11layMarketChipContainer = (chipAmount) =>
+      this.player11Lay.getByText(chipAmount);
     this.pleaseWaitForNextRoundMessage = (page) =>
       page.getByText('Please wait for next round');
     this.balanceAmount = page.locator(

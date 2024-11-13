@@ -287,3 +287,33 @@ test('TC_11, Verify Ability to Place Multiple Bets', async ({
       );
     });
   
+test('TC_22 Validate Double Button', async ({ page }) => {
+  cardCasinoPage = new CardCasinoPage(page);
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await cardCasinoPage.bettingOnSpecificMarketInLoop('Player 8 Back', 2);
+  await expect(await cardCasinoPage.player8BackMarketChipContainer('200')).toBeVisible();
+  await gamePage.clickingOnDoubleButtonInLoop(1);
+  await expect(await gamePage.player8BackMarketChipContainer('200')).not.toBeVisible();
+  await expect(await gamePage.player8BackMarketChipContainer('400')).toBeVisible();
+    });
+
+test('test_39 Verify undo functionality', async ({ page }) => {
+  cardCasinoPage = new CardCasinoPage(page);
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await gamePage.bettingOnSpecificMarketInLoop('Market A', 2);
+  await expect(await gamePage.aMarketChipContainer('2')).toBeVisible();
+  await gamePage.clickOnUndo();
+  await expect(await gamePage.aMarketChipContainer('2')).not.toBeVisible();
+  await expect(await gamePage.aMarketChipContainer('1')).toBeVisible();
+    });
+    
