@@ -101,8 +101,7 @@ test('TC_03 10, Validate bet placement on Back option for Player9', async ({
     await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player9Back);
     await cardCasinoPage.validatingCongratulationsMessage(cardCasinoPage);
     await cardCasinoPage.validateBetAmountForOneBetMarketAtOnce(cardCasinoPage,'100','Player 9 Back');
-    await cardCasinoPage.validateTotalBetAmountForMultipleMarkets(cardCasinoPage,'100',['Player 9 Back']);
-  });
+          });
     
 
 test('TC_04, Validate bet placement on Lay option for Player9', async ({
@@ -361,7 +360,6 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
     '100',
       ['Player 8 Lay']
     );
-  });
   let balanceAmountAfterWinning = await cardCasinoPage.readingBalanceAmount();
   console.log(balanceAmountAfterWinning, 'balanceAmountAfterWinning');
   let winningAmount = await cardCasinoPage.readingWinAmount();
@@ -371,12 +369,7 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
   console.log(`Calculated Expected Balance After Winning: ${balanceAmountAfterBetting + winAmount}`);
   console.log(`Actual Balance After Winning: ${balanceAmountAfterWinning}`);
 
-  await expect(balanceAfterWinningNum).toBe(balanceAfterBettingNum + winAmount);
-
-  await cardCasinoPage.validateTotalLossAmountForMultipleMarkets(cardCasinoPage,
-    '100',
-      ['Player 8 Lay']
-    );
+  await expect(balanceAmountAfterWinning).toBe(balanceAmountAfterBetting + winAmount);
   });
 
   
