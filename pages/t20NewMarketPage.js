@@ -49,12 +49,6 @@ exports.NewMarketT20Page = class NewMarketT20Page {
     this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
     this.cardUpdated = (page) => page.getByText('card updated');
     this.closeText = (page) => page.getByText('CLOSE');
-    this.playerAndWinningPattern = (page, player, pattern) =>
-      page.locator(`//span[text()='${player}']//span[text()='${pattern}']`);
-    this.winnerTextAndWinningPattern = (page, player) =>
-      page.locator(
-        `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
-      );
     this.drawMessage = (page) => page.getByText('Draw');
     this.lastWinAmount = (page) =>
       page.locator(`//span[text()='Last Win']//span/span`);

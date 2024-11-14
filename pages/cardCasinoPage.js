@@ -10,7 +10,14 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.page = page;
     this.assertions = new Assertions();
     this.body = page.locator('body');
-  
+    this.playerTotalsSelectors = [
+      page.locator(`//span[contains(text(), 'Player ${8}') and contains(text(), 'Total=>')]`),
+      page.locator(`//span[contains(text(), 'Player ${9}') and contains(text(), 'Total=>')]`),
+      page.locator(`//span[contains(text(), 'Player ${10}') and contains(text(), 'Total=>')]`),
+      page.locator(`//span[contains(text(), 'Player ${11}') and contains(text(), 'Total=>')]`)
+    ];
+    this.winnerAnnouncementSelector = this.page.locator
+    ("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");
     this.dealerUsernameInputField = (page) =>
       page.getByPlaceholder('Enter your username');
 
@@ -32,13 +39,13 @@ exports.CardCasinoPage = class CardCasinoPage {
       'Max bet Limit is Exceeded'
     )
     this.player8Back = this.page.locator("#player8-back");
-    this.player8Lay = this.page.locator("(//div[@id='player8-lay'])[1]");
-    this.player9Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[3]");
-    this.player9Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[4]");
-    this.player10Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[5]");
-    this.player10Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[6]");
-    this.player11Back = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[7]");
-    this.player11Lay = this.page.locator("(//div[contains(@class,'relative w-10 h-10')])[8]");
+    this.player8Lay = this.page.locator("#player8-lay");
+    this.player9Back = this.page.locator("#player9-back");
+    this.player9Lay = this.page.locator("#player9-lay");
+    this.player10Back = this.page.locator("#player10-back");
+    this.player10Lay = this.page.locator("#player10-lay");
+    this.player11Back = this.page.locator("#player11-back");
+    this.player11Lay = this.page.locator("#player11-lay");
     this.doublButton = this.page.locator("(//span[normalize-space()='double'])[1]");
     this.undoButton = this.page.locator("(//span[normalize-space()='undo'])[1]");
     this.closeLayGameRule =this.
@@ -66,8 +73,6 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
     this.cardUpdated = (page) => page.getByText('card updated');
     this.closeText = (page) => page.getByText('CLOSE');
-    this.playerAndWinningPattern = (page, player, pattern) =>
-      page.locator(`//span[text()='${player}']//span[text()='${pattern}']`);
     this.winnerTextAndWinningPattern = (page, player) =>
       page.locator(
         `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
@@ -132,26 +137,14 @@ exports.CardCasinoPage = class CardCasinoPage {
       case 'Player 8 Back':
         winAmountMultiplier = 12.2;
         break;
-      case 'Player 8 Lay':
-        winAmountMultiplier = 2;
-        break;
       case 'Player 9 Back':
         winAmountMultiplier = 5.95;
-        break;
-      case 'Player 9 Lay':
-        winAmountMultiplier = 2;
         break;
       case 'Player 10 Back':
         winAmountMultiplier = 3.2;
         break;
-      case 'Player 10 Lay':
-        winAmountMultiplier = 2;
-        break;
       case 'Player 11 Back':
         winAmountMultiplier = 2.08;
-        break;
-      case 'Player 11 Lay':
-        winAmountMultiplier = 2;
         break;
       
       }
@@ -167,17 +160,46 @@ exports.CardCasinoPage = class CardCasinoPage {
       `Validating Last win amount is matching with expected value  ${winAmountText} and calculated value ${winAmount}`
     );
   }
+  async validateWinAmountForOneBetMarketAtOnceForLay(page, betAmount, market) {
+    let winAmountMultiplierForLay;
+    switch (market) {
+      case 'Player 8 Lay':
+        winAmountMultiplierForLay = 2;
+        break;
+      case 'Player 9 Lay':
+        winAmountMultiplierForLay = 2;
+        break;
+      case 'Player 10 Lay':
+        winAmountMultiplierForLay = 2;
+        break;
+      case 'Player 11 Lay':
+        winAmountMultiplierForLay = 2;
+        break;
+      
+      }
+
+    let winAmountForLay = parseInt(betAmount * winAmountMultiplierForLay);
+    console.log(winAmountForLay);
+    console.log(`₹${parseFloat(winAmountForLay)}`);
+    let winAmountTextForLay = await this.readingWinAmount(page);
+    console.log(winAmountTextForLay);
+    await this.assertions.assertElementToBeEqual(
+      parseInt(winAmountTextForLay),
+      winAmountForLay,
+      `Validating Last win amount is matching with expected value  ${winAmountTextForLay}`
+    );
+    };
 
   async validateTotalBetAmountForMultipleMarkets(page, betAmount, markets) {
     const marketMultipliers = {
       'Player 8 Back': 12.2,
-      'Player 8 Lay': 12.7,
+      'Player 8 Lay': 2,
       'Player 9 Back': 5.95,
-      'Player 9 Lay': 5.45,
+      'Player 9 Lay': 2,
       'Player 10 Back': 3.2,
-      'Player 10 Lay': 2.45,
+      'Player 10 Lay': 2,
       'Player 11 Back': 2.08,
-      'Player 11 Lay': 1.18,
+      'Player 11 Lay': 2,
     };
 
     let totalWinAmount = 0;
@@ -427,12 +449,6 @@ async validateTotalBetAmountForLay() {
   const totalBetText = await this.page.textContent(this.totalBetAmount); // Fetch total bet display
   return parseFloat(totalBetText);
 }
-async validateBetAmountForLay(page, expectedBetAmount) {
-    const totalBetText = await this.page.totalBetAmount.textContent();
-    const numericBetAmount = totalBetText.replace(/[^\d]/g, '');
-    const actualBetAmount = parseInt(numericBetAmount, 10); 
-    expect(actualBetAmount).toBe(expectedBetAmount, `Validate bet amount ${expectedBetAmount}`);
-}
 async clickingOnDoubleButtonInLoop(numberOfLoop) {
   for (let i = 0; i < numberOfLoop; i++) {
     await executeStep(this.doublButton, 'click', 'click on double button');
@@ -469,13 +485,52 @@ async validateMaximumAllowedBet() {
     'Max Profit Limit is 600000 should be visible'
   );
 }
+// Method to retrieve the total value (base + card value) for each player
+async getPlayerTotals(_page) {
+  const playerTotals = [];
+  for (let i = 0; i < this.playerTotalsSelectors.length; i++) {
+    const totalLocator = this.playerTotalsSelectors[i];
+    const total = await totalLocator.textContent();
+    playerTotals.push({ player: `Player ${i + 1}`, total: parseInt(total, 10) });
+  }
+  return playerTotals;
 }
+// Method to find the player with the highest total value
+getWinningPlayer(_page,playerTotals) {
+  return playerTotals.reduce((max, player) => player.total > max.total ? player : max, playerTotals[0]);
+}
+// Method to verify that the winning player is correctly declared in the UI
+async verifyWinner(_page , winningPlayer) {
+  const displayedWinner = await this.page.$eval(this.winnerAnnouncementSelector, el => el.textContent);
+  expect(displayedWinner).toContain(winningPlayer.player);
+}
+async validateTotalLossAmountForMultipleMarkets(page, betAmount, markets) {
+  const marketMultipliers = {
+    'Player 8 Lay': 12.7,
+    'Player 9 Lay': 5.45,
+    'Player 10 Lay': 2.45,
+    'Player 11 Lay': 1.18,
+  };
 
+  let totalLossAmount = 0;
 
-/*await this.bettingOnSpecificMarketBeforeTimmerStart((page, player));
-  await this.assertions.assertElementVisible(
-    await this.clickOnSpecificMarket(cardCasinoPage,
-      'Player 9 Back');
-    'Bet amount exceeds the maximum bet limit should be visible'
+  for (const market of markets) {
+    const lossAmountMultiplier = marketMultipliers[market];
+
+    if (lossAmountMultiplier !== undefined) {
+      let lossAmount = betAmount * lossAmountMultiplier;
+      totalLossAmount += lossAmount; // Add each market's win amount to the total
+      console.log(
+        `Market: ${market}, Individual loss Amount: ₹${lossAmount.toFixed(2)}`
+      );
+    } else {
+      console.warn(`No multiplier found for market: ${market}`);
+    }
+  }
+
+  console.log(
+    `Total loss Amount for all markets: ₹${totalLossAmount.toFixed(2)}`
   );
-};*/
+
+}
+};
