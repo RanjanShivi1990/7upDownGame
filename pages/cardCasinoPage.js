@@ -10,6 +10,17 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.page = page;
     this.assertions = new Assertions();
     this.body = page.locator('body');
+    this.dealerUsernameInputField = (page) =>
+      page.getByPlaceholder('Enter your username');
+
+    this.dealerPasswordInputField = (page) =>
+      page.getByPlaceholder('Enter your password');
+
+    this.dealerLoginButton = (page) =>
+      page.getByRole('button', { name: 'Login' });
+
+    this.cardCasinoPageDealerPage = (page) =>
+      page.getByRole('link', { name: 'Casino32' });
     this.MarketExceedsLimitMesg = this.page.getByText(
       'Bet amount exceeds the maximum bet limit'
     );
@@ -44,11 +55,31 @@ exports.CardCasinoPage = class CardCasinoPage {
       this.chip10000 = this.page
       .locator("//div[contains(@class,'coin')]//span[text()='10K'] ")
       .first();
+
+    this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
     this.balanceAmount = page.locator(
       "//div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
+
+    this.betTimeText = this.page.getByText('Bet Time');
+    this.suspendedText = (page) => page.getByText('SUSPENDED');
+    this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
+    this.cardUpdated = (page) => page.getByText('card updated');
+    this.closeText = (page) => page.getByText('CLOSE');
+    this.winnerTextAndWinningPattern = (page, player) =>
+      page.locator(
+        `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
+      );
+    this.drawMessage = (page) => page.getByText('Draw');
     this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
     this.totalBetAmount =this.page.locator("//body/div[contains(@class,'flex items-center justify-center lg:h-screen')]/main[@id='queenParentContainer']/div[contains(@class,'lg:absolute bottom-0 flex flex-col w-full gap-2 px-1')]/div[contains(@class,'flex items-end justify-between w-full')]/div[1]/span[1]");
     this.totalWinAmount =this.page.locator("//span[text()='Total ']//span");
+    this.newGameButton = (page) =>
+      page.getByRole('button', { name: 'New Game' });
+    this.player8BackLock = page.locator("(//div[@class='relative w-10 h-10'])[1]")
+    this.voidRoundButton = (page) =>
+      page.getByRole('button', { name: 'Void Round' });
+    this.confirmVoidRound = (page) =>
+      page.getByRole('button', { name: 'Confirm' });
     this.congratulationsMessage =this.
       page
         .locator('div')
@@ -175,6 +206,29 @@ exports.CardCasinoPage = class CardCasinoPage {
         `Validating TotalBet amount is matching with expected value  ${totalBetAmountText} and calculated value ${totalBetAmount}`
       );*/
       }
+  async navigateToDelearDevAndLogin(page) {
+    await executeStep(page, 'navigate', 'Navigate to the game page', [
+      process.env.DEALERDEVURL,
+    ]);
+    await executeStep(
+      this.dealerUsernameInputField(page),
+      'fill',
+      `Filling username ${process.env.DEALERUSERNAME}`,
+      [process.env.DEALERUSERNAME]
+    );
+    await executeStep(
+      this.dealerPasswordInputField(page),
+      'fill',
+      `Filling password ${process.env.DEALERPASSWORD}`,
+      [process.env.DEALERPASSWORD]
+    );
+    await executeStep(
+      this.dealerLoginButton(page),
+      'click',
+      `Click on demo lobby button`,
+      []
+    );
+  }
   async readingWinAmount(page) {
     let winAmount = await this.lastWinAmount;
     let winAmountText = await winAmount.innerText();
@@ -212,12 +266,82 @@ exports.CardCasinoPage = class CardCasinoPage {
     }
   }
 
-  
+  async clickOnDealerCardCasinoGame(page) {
+    await executeStep(
+      this.cardCasinoPageDealerPage(page),
+      'click',
+      'Click on CardCasinoPage in dealer portal',
+      []
+    );
+  }
+
+  async clickNewGame(page) {
+    // Check if the element is disabled
+    let element = await page.locator("//button[text()='New Game']");
+    if (await element.isDisabled()) {
+      await executeStep(
+        this.voidRoundButton(page),
+        'click',
+        'Click on void game button',
+        []
+      );
+      await executeStep(
+        this.confirmVoidRound(page),
+        'click',
+        'Click on confirm void game button',
+        []
+      );
+      await executeStep(
+        this.newGameButton(page),
+        'click',
+        'Click on new game button',
+        []
+      );
+    } else {
+      await executeStep(
+        this.newGameButton(page),
+        'click',
+        'Click on new game button',
+        []
+      );
+    }
+  }
+
   async validatePleaseWaitForNextRoundMessage(page) {
     await this.assertions.assertElementVisible(
       this.pleaseWaitForNextRoundMessage(page),
       ' Please wait for next round message should be visible'
     );
+  }
+
+  async selectingCardsInLoop(page, cardsArray) {
+    await allure.step(`Selecting cards ${cardsArray}`, async () => {
+      await this.assertions.assertElementNotVisible(
+        this.betTimeText,
+        'Bet Time Text should be hidden'
+      );
+      await this.assertions.assertElementVisible(
+        this.suspendedText(page),
+        'Suspended text should be visible'
+      );
+      console.log(cardsArray.length, cardsArray[0]);
+      for (let i = 0; i < cardsArray.length; i++) {
+        await executeStep(
+          this.enterCardInputBox(page),
+          'click',
+          'Click on enter card Input field'
+        );
+        await executeStep(
+          this.enterCardInputBox(page),
+          'fill',
+          `Enter card ${cardsArray[i]} `,
+          [cardsArray[i]]
+        );
+        await allure.step('Pressing Enter to select card', async () => {
+          await page.keyboard.press('Enter');
+        });
+      }
+    });
   }
   async validateBalanceAmount() {
     await this.assertions.assertElementVisible(
@@ -305,32 +429,68 @@ async validateMaximumAllowedBet() {
     'Max Profit Limit is 600000 should be visible'
   );
 }
-async validateTotalLossAmountForMultipleMarkets(page, betAmount, markets) {
-  const marketMultipliers = {
-    'Player 8 Lay': 12.7,
-    'Player 9 Lay': 5.45,
-    'Player 10 Lay': 2.45,
-    'Player 11 Lay': 1.18,
+async validateLossAmountForLay(page, betAmount, market) {
+  let lossAmountMultiplier;
+  switch (market) {
+    case 'Player 8 Lay':
+      betAmountMultiplier = 13.7;
+      break;
+    case 'Player 9 Lay':
+      betAmountMultiplier = 6.45;
+      break;
+    case 'Player 10 Lay':
+      betAmountMultiplier = 3.45;
+      break;
+    case 'Player 11 Lay':
+      betAmountMultiplier = 2.18;
+      break;
   };
+  const totalLossAmount = parseInt(betAmount * (lossAmountMultiplier-1)).toFixed(2);
+  console.log(totalLossAmount);
+  const totalLossAmountText = await this.readingTotalBetAmount(page);
+);
+}
+  this.playerNameSelectors = [
+    "//span[contains(text(), 'Player 8')]",
+    "//span[contains(text(), 'Player 9')]",
+    "//span[contains(text(), 'Player 10')]",
+    "//span[contains(text(), 'Player 11')]"
+  ];
+  this.playerTotalSelectors = [
+    "//span[contains(text(), 'Total=>')]",
+    "//span[contains(text(), 'Total=>')] ",
+    "//span[contains(text(), 'Total=>')]",
+    "//span[contains(text(), 'Total=>')]"
+  ];
+  this.winnerAnnouncement = "//span[text()='Winner']"; 
+}
 
-  let totalLossAmount = 0;
-
-  for (const market of markets) {
-    const lossAmountMultiplier = marketMultipliers[market];
-
-    if (lossAmountMultiplier !== undefined) {
-      let lossAmount = betAmount * lossAmountMultiplier;
-      totalLossAmount += lossAmount; // Add each market's win amount to the total
-      console.log(
-        `Market: ${market}, Individual loss Amount: ₹${lossAmount.toFixed(2)}`
-      );
-    } else {
-      console.warn(`No multiplier found for market: ${market}`);
-    }
+async getPlayerTotals() {
+  // Check if playerTotalSelectors is defined and contains selectors
+  if (!this.playerTotalSelectors || this.playerTotalSelectors.length === 0) {
+    throw new Error("Player total selectors are not defined or empty.");
   }
 
-  console.log(
-    `Total loss Amount for all markets: ₹${totalLossAmount.toFixed(2)}`
+  const playerTotals = await Promise.all(
+    this.playerTotalSelectors.map(async (selector, index) => {
+      const totalText = await this.page.$eval(`xpath=${selector}`, el => 
+        parseFloat(el.textContent.replace('Total=>', ''))
+      );
+
+      return { player: `Player ${index + 8}`, total: totalText || 0 }; // Assuming player 8 starts at index 0
+    })
   );
+
+  return playerTotals;
 }
-};
+
+async getDisplayedWinner() {
+  const displayedWinner = await this.page.$eval(this.winnerAnnouncement, el => el.textContent);
+  return displayedWinner;
+}
+
+async verifyWinner(expectedPlayer) {
+  const displayedWinner = await this.getDisplayedWinner();
+  expect(displayedWinner).toContain(`Player ${expectedPlayer}`);
+}
+}

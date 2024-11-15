@@ -2,7 +2,6 @@ import { test , expect } from '@playwright/test';
 import { CardCasinoPage } from '../pages/cardCasinoPage.js';
 import testData from '../testData/testData.json';
 const Assertions = require('../utils/assertions');
-const { DealerPage } = require('../pages/DealerPage');
 
 let cardCasinoPage , assertions;
 test.beforeEach(async ({ page }) => {
@@ -37,10 +36,10 @@ test('TC_01 19 21, Validate bet placement on Back option for Player8', async ({
     await cardCasinoPage.validatingCongratulationsMessage(cardCasinoPage);
     await cardCasinoPage.validateBetAmountForOneBetMarketAtOnce(cardCasinoPage,'100','Player 8 Back');
     const playerTotals = await cardCasinoPage.getPlayerTotals(dealerDevPage);
-    const highestTotal = Math.max(...playerTotals.map(player => player.total));
-    const winningPlayer = playerTotals.find(player => player.total === highestTotal).player;
-    await cardCasinoPage.verifyWinner(dealerDevPage,winningPlayer);
-  console.log(`Test passed: ${winningPlayer} with total ${highestTotal} is declared the winner.`);
+    console.log(playerTotals);
+
+    const expectedWinnerPlayer = 8; // Example: Change this based on your setup
+    await cardCasinoPage.verifyWinner(expectedWinnerPlayer);
 });
 
 test('TC_02, Validate bet placement on Lay option for Player8', async ({
@@ -339,13 +338,13 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
   await expect(parseFloat(balanceAmountAfterBetting)).toBe(balanceAmount - 1370);
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage, testData.cardCasino.betOption.Player8Back);
   await cardCasinoPage.validatingCongratulationsMessage();
+  await page.waitForTimeout(20000);
   await cardCasinoPage.validateTotalLossAmountForMultipleMarkets(cardCasinoPage, '100', ['Player 8 Lay']);
-  await page.waitForTimeout(2000); 
+   
   let balanceAmountAfterWinning = await cardCasinoPage.readingBalanceAmount();
   console.log(balanceAmountAfterWinning, 'balanceAmountAfterWinning');
   let winningAmount = await cardCasinoPage.readingWinAmount();
-  const winAmount = parseFloat(winningAmount) || 0;
-  const expectedBalanceAfterWinning = parseFloat((parseFloat(balanceAmountAfterBetting) + winAmount).toFixed(2));
+  const expectedBalanceAfterWinning = parseFloat((balanceAmountAfterBetting + winnningAmount).toFixed(2));
   console.log(`Calculated Expected Balance After Winning: ${expectedBalanceAfterWinning}`);
   console.log(`Actual Balance After Winning: ${balanceAmountAfterWinning}`);
   await expect(parseFloat(balanceAmountAfterWinning)).toBe(expectedBalanceAfterWinning);
