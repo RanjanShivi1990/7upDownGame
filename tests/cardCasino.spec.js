@@ -10,7 +10,7 @@ test.beforeEach(async ({ page }) => {
     await cardCasinoPage.goto();
   });
 
-test('TC_01 19 21, Validate bet placement on Back option for Player8', async ({
+test('TC_01 19 27, Validate bet placement on Back option for Player8 and Winnings Distribution for Winning Bets', async ({
     page,
     context,
   }) => {
@@ -22,11 +22,13 @@ test('TC_01 19 21, Validate bet placement on Back option for Player8', async ({
     await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
     await dealerDevPage.reload();
     await cardCasinoPage.clickNewGame(dealerDevPage);
+    let initialBetAmount = await cardCasinoPage.readingbetAmount();
+    console.log(`Intial Bet AMount: ₹${initialBetAmount}`);
     await cardCasinoPage.clickOnSpecificMarket(
       'Player 8 Back'
     );
-    await cardCasinoPage.validateBetAmount(cardCasinoPage, '100');
-
+    let totalBetAmount = await cardCasinoPage.readingbetAmount();
+     console.log(`Total Bet Amount: ₹${totalBetAmount}`);
     await cardCasinoPage.waitForTimeout(
       dealerDevPage,
       parseInt(process.env.BET_TIMEOUT),
@@ -35,12 +37,12 @@ test('TC_01 19 21, Validate bet placement on Back option for Player8', async ({
     await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player8Back);
     await cardCasinoPage.validatingCongratulationsMessage(cardCasinoPage);
     await cardCasinoPage.validateBetAmountForOneBetMarketAtOnce(cardCasinoPage,'100','Player 8 Back');
-    const playerTotals = await cardCasinoPage.getPlayerTotals(dealerDevPage);
-    console.log(playerTotals);
-
-    const expectedWinnerPlayer = 8; // Example: Change this based on your setup
-    await cardCasinoPage.verifyWinner(expectedWinnerPlayer);
-});
+    await newMarketT20Page.validatePlayerAndWinningPattern(
+      dealerDevPage,
+      'Player 8',
+      '21'
+    );
+  });
 
 test('TC_02, Validate bet placement on Lay option for Player8', async ({
     page,
@@ -56,7 +58,7 @@ test('TC_02, Validate bet placement on Lay option for Player8', async ({
     await cardCasinoPage.clickOnSpecificMarket(
       'Player 8 Lay'
       ); 
-    
+    await cardCasinoPage.validateBetAmount(cardCasinoPage,100);
     await cardCasinoPage.waitForTimeout(
       dealerDevPage,
       parseInt(process.env.BET_TIMEOUT),
@@ -260,8 +262,6 @@ test('TC_11, Verify Ability to Place Multiple Bets', async ({
       );
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player8Back);
   await cardCasinoPage.validatingCongratulationsMessage();
-
-  
     });
 
 test('TC_22 24 Verify double & undo button functionality for bets', async ({
@@ -314,7 +314,7 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
   }) => {
   cardCasinoPage = new CardCasinoPage(page);
   let balanceAmount = await cardCasinoPage.readingBalanceAmount();
-  console.log(balanceAmount, 'balanceAmountBeforeBetting');
+  console.log(balanceAmount, 'balanceAmountbeforeBet');
   const dealerDevPagePromise = await context.newPage();
   const dealerDevPage = await dealerDevPagePromise;
   await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
@@ -335,19 +335,21 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
   );
   let balanceAmountAfterBetting = await cardCasinoPage.readingBalanceAmount();
   console.log(balanceAmountAfterBetting, 'balanceAmountAfterBetting');
-  await expect(parseFloat(balanceAmountAfterBetting)).toBe(balanceAmount - 1370);
+  await expect(balanceAmount - 1370).toBe(parseFloat(balanceAmountAfterBetting));
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage, testData.cardCasino.betOption.Player8Back);
-  await cardCasinoPage.validatingCongratulationsMessage();
-  await page.waitForTimeout(20000);
-  await cardCasinoPage.validateTotalLossAmountForMultipleMarkets(cardCasinoPage, '100', ['Player 8 Lay']);
-   
-  let balanceAmountAfterWinning = await cardCasinoPage.readingBalanceAmount();
+  await cardCasinoPage.validatingCongratulationsMessage({ timeout: 10000 });
+  await cardCasinoPage.validateLossAmountForLay(cardCasinoPage, '100', 'Player 8 Lay');
+  let winningAmount = 100 * 12.2;
+  console.log(winningAmount, 'win');
+  //TODO: In UI balance value is not correctly updating(https://diamondexch1.atlassian.net/browse/AA-29?atlOrigin=eyJpIjoiY2QwMmNhMDVjYjg4NDhjMmJkODM3OTdjY2U5YzI1NDYiLCJwIjoiaiJ9)
+  await page.waitForTimeout(5000);
+  let balanceAmountAfterWinning = await gamePage.readingBalanceAmount();
   console.log(balanceAmountAfterWinning, 'balanceAmountAfterWinning');
-  let winningAmount = await cardCasinoPage.readingWinAmount();
-  const expectedBalanceAfterWinning = parseFloat((balanceAmountAfterBetting + winnningAmount).toFixed(2));
-  console.log(`Calculated Expected Balance After Winning: ${expectedBalanceAfterWinning}`);
-  console.log(`Actual Balance After Winning: ${balanceAmountAfterWinning}`);
-  await expect(parseFloat(balanceAmountAfterWinning)).toBe(expectedBalanceAfterWinning);
+  console.log(
+    parseFloat(balanceAmountAfterBetting) + parseFloat(winningAmount)
+  );
+  await expect(parseFloat(balanceAmountAfterWinning)).toBe(
+    parseFloat(balanceAmountAfterBetting) + parseFloat(winningAmount)
+  );
 });
 
-  

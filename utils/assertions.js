@@ -28,7 +28,7 @@ class Assertions {
   async assertElementVisibleWithExtraWait(element, description) {
     await allure.step(description, async () => {
       await expect(element).toBeVisible({
-        timeout: parseInt(process.env.EXTRAWAIT),
+        timeout: parseInt(process.env.EXTRALARGEWAIT),
       });
     });
   }

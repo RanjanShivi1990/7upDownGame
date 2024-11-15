@@ -12,6 +12,15 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.body = page.locator('body');
     this.dealerUsernameInputField = (page) =>
       page.getByPlaceholder('Enter your username');
+    //this.playerNameSelectors = (page, player) =>page.locator(`//span[text()='${player}`);
+    this.playerAndTotalValueInDealerPage = (page, player, value) =>
+      page.locator(
+        `//span[text()='Player ${player}']/following-sibling::span[contains(text(),'Total=>${value}')]  `
+      );
+      this.winnerTextAndWinningPattern = (page, player) =>
+        page.locator(
+          `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
+        );
 
     this.dealerPasswordInputField = (page) =>
       page.getByPlaceholder('Enter your password');
@@ -57,22 +66,22 @@ exports.CardCasinoPage = class CardCasinoPage {
       .first();
 
     this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
-    this.balanceAmount = page.locator(
-      "//div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
+    this.balanceAmount = this.page.locator(
+      'div[id="balanceAmountContainer"] span'
+    );
 
     this.betTimeText = this.page.getByText('Bet Time');
     this.suspendedText = (page) => page.getByText('SUSPENDED');
     this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
     this.cardUpdated = (page) => page.getByText('card updated');
     this.closeText = (page) => page.getByText('CLOSE');
-    this.winnerTextAndWinningPattern = (page, player) =>
-      page.locator(
-        `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
-      );
     this.drawMessage = (page) => page.getByText('Draw');
     this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
-    this.totalBetAmount =this.page.locator("//body/div[contains(@class,'flex items-center justify-center lg:h-screen')]/main[@id='queenParentContainer']/div[contains(@class,'lg:absolute bottom-0 flex flex-col w-full gap-2 px-1')]/div[contains(@class,'flex items-end justify-between w-full')]/div[1]/span[1]");
-    this.totalWinAmount =this.page.locator("//span[text()='Total ']//span");
+    this.totalBetAmount = this.page.locator(
+      "//span[text()='Total Bet']/following-sibling::span"
+    );
+    this.totalWinAmount = (page) =>
+      page.locator("//span[text()='Total ']//span");
     this.newGameButton = (page) =>
       page.getByRole('button', { name: 'New Game' });
     this.player8BackLock = page.locator("(//div[@class='relative w-10 h-10'])[1]")
@@ -110,7 +119,8 @@ exports.CardCasinoPage = class CardCasinoPage {
       await this.totalBetAmount,
       betAmount,
       `Validate bet amount ${betAmount}`
-    );
+    )
+    console.log('Total Bet Amount',betAmount);
   }
 
   async validateBetAmountForOneBetMarketAtOnce(page, betAmount, market) {
@@ -171,13 +181,6 @@ exports.CardCasinoPage = class CardCasinoPage {
      `Validating Last win amount is matching with expected value  ${winAmountTextForLay} and calculated value ${winAmountForLay}`
     );
     }
-    async readingTotalBetAmount(page) {
-      let betAmountForLay = await this.totalBetAmount;
-      let betAmountText = await betAmountForLay.innerText();
-      betAmountText = await betAmountText.replace(',', '').replace('₹', '');
-      console.log('TotalBetAmount', betAmountText);
-      return betAmountText;
-    }
 
     async validateBetAmountForOneBetMarketAtOnceForLay(page, betAmount, market) {
       let betAmountMultiplier;
@@ -198,8 +201,7 @@ exports.CardCasinoPage = class CardCasinoPage {
         }
   
       const totalBetAmount = parseInt(betAmount * (betAmountMultiplier-1)).toFixed(2);
-      console.log(totalBetAmount);
-      const totalBetAmountText = await this.readingTotalBetAmount(page);
+      console.log('Total bet Amount',totalBetAmount);
       /*await this.assertions.assertElementToBeEqual(
         parseInt(totalBetAmountText),
         totalBetAmount,
@@ -398,7 +400,15 @@ async clickingOnDoubleButtonInLoop(numberOfLoop) {
     await executeStep(this.doublButton, 'click', 'click on double button');
   }
 }
-  async readingBalanceAmount() {
+async readingBetAmount(page){
+  let betAmount = await this.totalBetAmount.innerText();
+  betAmount = betAmount.replaceAll(',', '').replaceAll('₹', '');
+  console.log('Total Bet Amount',betAmount);
+  return betAmount;
+
+}
+
+  async readingBalanceAmount(page) {
     let balanceAmount = await this.balanceAmount.innerText();
     balanceAmount = balanceAmount.replaceAll(',', '').replaceAll('₹', '');
     console.log('balanceAmount', balanceAmount);
@@ -433,64 +443,41 @@ async validateLossAmountForLay(page, betAmount, market) {
   let lossAmountMultiplier;
   switch (market) {
     case 'Player 8 Lay':
-      betAmountMultiplier = 13.7;
+      lossAmountMultiplier = 13.7;
       break;
     case 'Player 9 Lay':
-      betAmountMultiplier = 6.45;
+      lossAmountMultiplier = 6.45;
       break;
     case 'Player 10 Lay':
-      betAmountMultiplier = 3.45;
+      lossAmountMultiplier = 3.45;
       break;
     case 'Player 11 Lay':
-      betAmountMultiplier = 2.18;
+      lossAmountMultiplier = 2.18;
       break;
   };
   const totalLossAmount = parseInt(betAmount * (lossAmountMultiplier-1)).toFixed(2);
-  console.log(totalLossAmount);
-  const totalLossAmountText = await this.readingTotalBetAmount(page);
-);
-}
-  this.playerNameSelectors = [
-    "//span[contains(text(), 'Player 8')]",
-    "//span[contains(text(), 'Player 9')]",
-    "//span[contains(text(), 'Player 10')]",
-    "//span[contains(text(), 'Player 11')]"
-  ];
-  this.playerTotalSelectors = [
-    "//span[contains(text(), 'Total=>')]",
-    "//span[contains(text(), 'Total=>')] ",
-    "//span[contains(text(), 'Total=>')]",
-    "//span[contains(text(), 'Total=>')]"
-  ];
-  this.winnerAnnouncement = "//span[text()='Winner']"; 
+  console.log('Total Loss Amount for Lay',totalLossAmount);
 }
 
-async getPlayerTotals() {
-  // Check if playerTotalSelectors is defined and contains selectors
-  if (!this.playerTotalSelectors || this.playerTotalSelectors.length === 0) {
-    throw new Error("Player total selectors are not defined or empty.");
-  }
-
-  const playerTotals = await Promise.all(
-    this.playerTotalSelectors.map(async (selector, index) => {
-      const totalText = await this.page.$eval(`xpath=${selector}`, el => 
-        parseFloat(el.textContent.replace('Total=>', ''))
-      );
-
-      return { player: `Player ${index + 8}`, total: totalText || 0 }; // Assuming player 8 starts at index 0
-    })
+async validatePlayerAndWinningPattern(page, player, value) {
+  await this.assertions.assertElementVisible(
+    this.closeText(page),
+    'Validate close Text is visible'
   );
-
-  return playerTotals;
-}
-
-async getDisplayedWinner() {
-  const displayedWinner = await this.page.$eval(this.winnerAnnouncement, el => el.textContent);
-  return displayedWinner;
-}
-
-async verifyWinner(expectedPlayer) {
-  const displayedWinner = await this.getDisplayedWinner();
-  expect(displayedWinner).toContain(`Player ${expectedPlayer}`);
+  if (player === 'both') {
+    await this.assertions.assertElementVisible(
+      await this.drawMessage(page),
+      `Validate ${player} player are win with draw message in dealer dev page `
+    );
+  } else {
+    await this.assertions.assertElementVisible(
+      await this.playerAndTotalValueInDealerPage(page,player, value),
+      `Validate ${player} is win with pattern ${value} in dealer dev page `
+    );
+    await this.assertions.assertElementVisible(
+      await this.winnerTextAndWinningPattern(page, player),
+      `Validate ${player} winner Text in dealer dev page`
+    );
+  }
 }
 }
