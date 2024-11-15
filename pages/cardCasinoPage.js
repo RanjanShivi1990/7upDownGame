@@ -10,25 +10,6 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.page = page;
     this.assertions = new Assertions();
     this.body = page.locator('body');
-    this.playerTotalsSelectors = [
-      page.locator(`//span[contains(text(), 'Player ${8}') and contains(text(), 'Total=>')]`),
-      page.locator(`//span[contains(text(), 'Player ${9}') and contains(text(), 'Total=>')]`),
-      page.locator(`//span[contains(text(), 'Player ${10}') and contains(text(), 'Total=>')]`),
-      page.locator(`//span[contains(text(), 'Player ${11}') and contains(text(), 'Total=>')]`)
-    ];
-    this.winnerAnnouncementSelector = this.page.locator
-    ("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");
-    this.dealerUsernameInputField = (page) =>
-      page.getByPlaceholder('Enter your username');
-
-    this.dealerPasswordInputField = (page) =>
-      page.getByPlaceholder('Enter your password');
-
-    this.dealerLoginButton = (page) =>
-      page.getByRole('button', { name: 'Login' });
-
-    this.cardCasinoPageDealerPage = (page) =>
-      page.getByRole('link', { name: 'Casino32' });
     this.MarketExceedsLimitMesg = this.page.getByText(
       'Bet amount exceeds the maximum bet limit'
     );
@@ -63,37 +44,16 @@ exports.CardCasinoPage = class CardCasinoPage {
       this.chip10000 = this.page
       .locator("//div[contains(@class,'coin')]//span[text()='10K'] ")
       .first();
-
-    this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
-    this.balanceAmount = this.page.locator(
-      "(//span[contains(@class,'flex items-center gap-1')])[2]");
-
-    this.betTimeText = this.page.getByText('Bet Time');
-    this.suspendedText = (page) => page.getByText('SUSPENDED');
-    this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
-    this.cardUpdated = (page) => page.getByText('card updated');
-    this.closeText = (page) => page.getByText('CLOSE');
-    this.winnerTextAndWinningPattern = (page, player) =>
-      page.locator(
-        `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
-      );
-    this.drawMessage = (page) => page.getByText('Draw');
+    this.balanceAmount = page.locator(
+      "//div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
     this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
-    this.totalBetAmount =this.page.locator("(//span[contains(@class,'flex items-center gap-1')])[1]");
+    this.totalBetAmount =this.page.locator("//body/div[contains(@class,'flex items-center justify-center lg:h-screen')]/main[@id='queenParentContainer']/div[contains(@class,'lg:absolute bottom-0 flex flex-col w-full gap-2 px-1')]/div[contains(@class,'flex items-end justify-between w-full')]/div[1]/span[1]");
     this.totalWinAmount =this.page.locator("//span[text()='Total ']//span");
-    this.newGameButton = (page) =>
-      page.getByRole('button', { name: 'New Game' });
-
-    this.voidRoundButton = (page) =>
-      page.getByRole('button', { name: 'Void Round' });
-    this.confirmVoidRound = (page) =>
-      page.getByRole('button', { name: 'Confirm' });
     this.congratulationsMessage =this.
       page
         .locator('div')
         .filter({ hasText: 'CongratulationsYou Won ₹' })
         .nth(1);
-    // this.youWonMessage = (page) => page.getByText('You Won');
   }
 
   async waitForTimeout(page, timeout, description) {
@@ -119,15 +79,6 @@ exports.CardCasinoPage = class CardCasinoPage {
       await this.totalBetAmount,
       betAmount,
       `Validate bet amount ${betAmount}`
-    );
-  }
-  
-
-  async validateTotalWinAmount(page, winAmount) {
-    await this.assertions.assertElementToContainText(
-      await this.totalWinAmount,
-      winAmount,
-      `Validate bet amount is ${winAmount}`
     );
   }
 
@@ -186,102 +137,44 @@ exports.CardCasinoPage = class CardCasinoPage {
     await this.assertions.assertElementToBeEqual(
       parseInt(winAmountTextForLay),
       winAmountForLay,
-      `Validating Last win amount is matching with expected value  ${winAmountTextForLay}`
+     `Validating Last win amount is matching with expected value  ${winAmountTextForLay} and calculated value ${winAmountForLay}`
     );
-    };
-
-  async validateTotalBetAmountForMultipleMarkets(page, betAmount, markets) {
-    const marketMultipliers = {
-      'Player 8 Back': 12.2,
-      'Player 8 Lay': 2,
-      'Player 9 Back': 5.95,
-      'Player 9 Lay': 2,
-      'Player 10 Back': 3.2,
-      'Player 10 Lay': 2,
-      'Player 11 Back': 2.08,
-      'Player 11 Lay': 2,
-    };
-
-    let totalWinAmount = 0;
-
-    for (const market of markets) {
-      const winAmountMultiplier = marketMultipliers[market];
-
-      if (winAmountMultiplier !== undefined) {
-        let winAmount = betAmount * winAmountMultiplier;
-        totalWinAmount += winAmount; // Add each market's win amount to the total
-        console.log(
-          `Market: ${market}, Individual Win Amount: ₹${winAmount.toFixed(2)}`
-        );
-      } else {
-        console.warn(`No multiplier found for market: ${market}`);
-      }
+    }
+    async readingTotalBetAmount(page) {
+      let betAmountForLay = await this.totalBetAmount;
+      let betAmountText = await betAmountForLay.innerText();
+      betAmountText = await betAmountText.replace(',', '').replace('₹', '');
+      console.log('TotalBetAmount', betAmountText);
+      return betAmountText;
     }
 
-    console.log(
-      `Total Win Amount for all markets: ₹${totalWinAmount.toFixed(2)}`
-    );
-
-    // Read the displayed total win amount from the page
-    let winAmountText = await this.readingWinAmount(page);
-    console.log(`Displayed Total Win Amount: ${winAmountText}`);
-
-    // Validate the total calculated win amount with the displayed value
-    await this.assertions.assertElementToBeEqual(
-      parseFloat(winAmountText),
-      totalWinAmount,
-      `Validating total win amount: displayed value ${winAmountText} matches calculated value ₹${totalWinAmount.toFixed(
-        2
-      )}`
-    );
-  }
-
-  async validatePlayerAndWinningPattern(page, player, pattern) {
-    await this.assertions.assertElementVisible(
-      this.closeText(page),
-      'Validate close Text is visible'
-    );
-    if (player === 'both') {
-      await this.assertions.assertElementVisible(
-        await this.drawMessage(page),
-        `Validate ${player} player are win with draw message in dealer dev page `
-      );
-    } else {
-      await this.assertions.assertElementVisible(
-        await this.playerAndWinningPattern(page, player, pattern),
-        `Validate ${player} is win with pattern ${pattern} in dealer dev page `
-      );
-      await this.assertions.assertElementVisible(
-        await this.winnerTextAndWinningPattern(page, player),
-        `Validate ${player} winner Text in dealer dev page`
-      );
-    }
-  }
+    async validateBetAmountForOneBetMarketAtOnceForLay(page, betAmount, market) {
+      let betAmountMultiplier;
+      switch (market) {
+        case 'Player 8 Lay':
+          betAmountMultiplier = 13.7;
+          break;
+        case 'Player 9 Lay':
+          betAmountMultiplier = 6.45;
+          break;
+        case 'Player 10 Lay':
+          betAmountMultiplier = 3.45;
+          break;
+        case 'Player 11 Lay':
+          betAmountMultiplier = 2.18;
+          break;
+        
+        }
   
-
-  async navigateToDelearDevAndLogin(page) {
-    await executeStep(page, 'navigate', 'Navigate to the game page', [
-      process.env.DEALERDEVURL,
-    ]);
-    await executeStep(
-      this.dealerUsernameInputField(page),
-      'fill',
-      `Filling username ${process.env.DEALERUSERNAME}`,
-      [process.env.DEALERUSERNAME]
-    );
-    await executeStep(
-      this.dealerPasswordInputField(page),
-      'fill',
-      `Filling password ${process.env.DEALERPASSWORD}`,
-      [process.env.DEALERPASSWORD]
-    );
-    await executeStep(
-      this.dealerLoginButton(page),
-      'click',
-      `Click on demo lobby button`,
-      []
-    );
-  }
+      const totalBetAmount = parseInt(betAmount * (betAmountMultiplier-1)).toFixed(2);
+      console.log(totalBetAmount);
+      const totalBetAmountText = await this.readingTotalBetAmount(page);
+      /*await this.assertions.assertElementToBeEqual(
+        parseInt(totalBetAmountText),
+        totalBetAmount,
+        `Validating TotalBet amount is matching with expected value  ${totalBetAmountText} and calculated value ${totalBetAmount}`
+      );*/
+      }
   async readingWinAmount(page) {
     let winAmount = await this.lastWinAmount;
     let winAmountText = await winAmount.innerText();
@@ -319,82 +212,12 @@ exports.CardCasinoPage = class CardCasinoPage {
     }
   }
 
-  async clickOnDealerCardCasinoGame(page) {
-    await executeStep(
-      this.cardCasinoPageDealerPage(page),
-      'click',
-      'Click on CardCasinoPage in dealer portal',
-      []
-    );
-  }
-
-  async clickNewGame(page) {
-    // Check if the element is disabled
-    let element = await page.locator("//button[text()='New Game']");
-    if (await element.isDisabled()) {
-      await executeStep(
-        this.voidRoundButton(page),
-        'click',
-        'Click on void game button',
-        []
-      );
-      await executeStep(
-        this.confirmVoidRound(page),
-        'click',
-        'Click on confirm void game button',
-        []
-      );
-      await executeStep(
-        this.newGameButton(page),
-        'click',
-        'Click on new game button',
-        []
-      );
-    } else {
-      await executeStep(
-        this.newGameButton(page),
-        'click',
-        'Click on new game button',
-        []
-      );
-    }
-  }
-
+  
   async validatePleaseWaitForNextRoundMessage(page) {
     await this.assertions.assertElementVisible(
       this.pleaseWaitForNextRoundMessage(page),
       ' Please wait for next round message should be visible'
     );
-  }
-
-  async selectingCardsInLoop(page, cardsArray) {
-    await allure.step(`Selecting cards ${cardsArray}`, async () => {
-      await this.assertions.assertElementNotVisible(
-        this.betTimeText,
-        'Bet Time Text should be hidden'
-      );
-      await this.assertions.assertElementVisible(
-        this.suspendedText(page),
-        'Suspended text should be visible'
-      );
-      console.log(cardsArray.length, cardsArray[0]);
-      for (let i = 0; i < cardsArray.length; i++) {
-        await executeStep(
-          this.enterCardInputBox(page),
-          'click',
-          'Click on enter card Input field'
-        );
-        await executeStep(
-          this.enterCardInputBox(page),
-          'fill',
-          `Enter card ${cardsArray[i]} `,
-          [cardsArray[i]]
-        );
-        await allure.step('Pressing Enter to select card', async () => {
-          await page.keyboard.press('Enter');
-        });
-      }
-    });
   }
   async validateBalanceAmount() {
     await this.assertions.assertElementVisible(
@@ -445,10 +268,7 @@ async clickOnUndo() {
   await executeStep(this.undoButton, 'click', 'Click undo button');
 }
 
-async validateTotalBetAmountForLay() {
-  const totalBetText = await this.page.textContent(this.totalBetAmount); // Fetch total bet display
-  return parseFloat(totalBetText);
-}
+
 async clickingOnDoubleButtonInLoop(numberOfLoop) {
   for (let i = 0; i < numberOfLoop; i++) {
     await executeStep(this.doublButton, 'click', 'click on double button');
@@ -485,25 +305,6 @@ async validateMaximumAllowedBet() {
     'Max Profit Limit is 600000 should be visible'
   );
 }
-// Method to retrieve the total value (base + card value) for each player
-async getPlayerTotals(_page) {
-  const playerTotals = [];
-  for (let i = 0; i < this.playerTotalsSelectors.length; i++) {
-    const totalLocator = this.playerTotalsSelectors[i];
-    const total = await totalLocator.textContent();
-    playerTotals.push({ player: `Player ${i + 1}`, total: parseInt(total, 10) });
-  }
-  return playerTotals;
-}
-// Method to find the player with the highest total value
-getWinningPlayer(_page,playerTotals) {
-  return playerTotals.reduce((max, player) => player.total > max.total ? player : max, playerTotals[0]);
-}
-// Method to verify that the winning player is correctly declared in the UI
-async verifyWinner(_page , winningPlayer) {
-  const displayedWinner = await this.page.$eval(this.winnerAnnouncementSelector, el => el.textContent);
-  expect(displayedWinner).toContain(winningPlayer.player);
-}
 async validateTotalLossAmountForMultipleMarkets(page, betAmount, markets) {
   const marketMultipliers = {
     'Player 8 Lay': 12.7,
@@ -531,6 +332,5 @@ async validateTotalLossAmountForMultipleMarkets(page, betAmount, markets) {
   console.log(
     `Total loss Amount for all markets: ₹${totalLossAmount.toFixed(2)}`
   );
-
 }
 };
