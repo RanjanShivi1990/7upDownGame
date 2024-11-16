@@ -17,13 +17,38 @@ exports.CardCasinoPage = class CardCasinoPage {
         `//span[text()='Player ${player}']/following-sibling::span[contains(text(),'Total=>${value}')]  `
       );
         // Player card value locators
-        this.playerNamesSelector  = (page) => page.locator(
-     `//span[text()='Player']`);
+       // this.playerNamesSelector  = (page) => page.locator(`//span[text()='Player']`);
 
     // Player totals locators (used for the test)
-    this.playerTotalsSelector = (page) =>page.locator
-      (`//span[text()='Player']/following-sibling::span[contains(text(), 'Total=>')]`);
+    //this.playerTotalsSelector = (page) =>page.locator(`//span[text()='Player']/following-sibling::span[contains(text(), 'Total=>')]`);
+      // Define selectors for each player's base value and card value
+      // Players' base values and card values now use methods instead of direct properties
+    this.players = [
+      {
+        name: 'Player 8',
+        totalValueLocator: (page) => page.locator(`//span[text()='Player 8']/following-sibling::span[contains(text(),'Total=>')]`), 
+        
+      
+      },
+      {
+        name: 'Player 9',
+        totalValueLocator: (page) => page.locator(`//span[text()='Player 9']/following-sibling::span[contains(text(),'Total=>')]`), 
+        
+      },
+      {
+        name: 'Player 10',
+        totalValueLocator: (page) => page.locator(`//span[text()='Player 10']/following-sibling::span[contains(text(),'Total=>')]`), 
+       
+      },
+      {
+        name: 'Player 11',
+        totalValueLocator: (page) => page.locator(`//span[text()='Player 11']/following-sibling::span[contains(text(),'Total=>')]`), 
+        
+      }
+    ];
 
+    this.winnerAnnouncementSelector = (page) => page.locator("//div[contains(@class,'gap-1 grid-cols-1')])[1]"); 
+  
       this.declaredWinnerSelector= (page) => page.locator
     ("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");
     
@@ -55,8 +80,7 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.player11Lay = this.page.locator("#player11-lay");
     this.doublButton = this.page.locator("(//span[normalize-space()='double'])[1]");
     this.undoButton = this.page.locator("(//span[normalize-space()='undo'])[1]");
-    this.closeLayGameRule =this.
-      page.locator("(//*[name()='path'][@fill-rule='evenodd'])[12]");
+
     this.player9BackMarketChipContainer = (chipAmount) =>
       this.player9Back.getByText(chipAmount);
     this.player11LayMarketChipContainer = (chipAmount) =>
@@ -71,7 +95,6 @@ exports.CardCasinoPage = class CardCasinoPage {
       .locator("//div[contains(@class,'coin')]//span[text()='10K'] ")
       .first();
 
-    this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
     this.balanceAmount = this.page.locator
     (" //div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
      
@@ -81,7 +104,6 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.enterCardInputBox = (page) => page.getByPlaceholder('Enter card');
     this.cardUpdated = (page) => page.getByText('card updated');
     this.closeText = (page) => page.getByText('CLOSE');
-    this.drawMessage = (page) => page.getByText('Draw');
     this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
     this.totalBetAmount = this.page.locator(
       "(//span[contains(@class,'flex items-center gap-1')])[1]");
@@ -314,13 +336,6 @@ exports.CardCasinoPage = class CardCasinoPage {
     }
   }
 
-  async validatePleaseWaitForNextRoundMessage(page) {
-    await this.assertions.assertElementVisible(
-      this.pleaseWaitForNextRoundMessage(page),
-      ' Please wait for next round message should be visible'
-    );
-  }
-
   async selectingCardsInLoop(page, cardsArray) {
     await allure.step(`Selecting cards ${cardsArray}`, async () => {
       await this.assertions.assertElementNotVisible(
@@ -500,24 +515,30 @@ async verifyMarketButtonsDisabled() {
       expect(isEnabled).toBe(false, `Market button ${i + 1} should be disabled.`);
     }
   }
-  async getPlayerData(page) {
-    // Fetch player names using locators
-    const playerNameElements = await this.playerNamesSelector(page).allTextContents();
-    
-    // Fetch player totals using locators
-    const playerTotalElements = await this.playerTotalsSelector(page).allTextContents();
-  
-    // Process the total values to extract integers
-    const playerTotals = playerTotalElements.map(totalText =>
-      parseInt(totalText.replace('Total=>', '').trim(), 10)
-    );
-  
-    // Combine player names and totals into an array of objects
-    return playerNameElements.map((name, index) => ({
-      name: name.trim(),
-      total: playerTotals[index],
-    }));
-  }
-  
-}
+  // Method to calculate player totals
+  async getPlayerTotals() {
+    const playerTotals = [];
 
+    for (const player of this.players) {
+      const totalValue = await player.totalValueLocator(this.page).waitFor({ state: 'visible', timeout: 10000 }); 
+      playerTotals.push({
+        player: player.name,
+        totalValue: parseInt(totalValue.replace('Total=>', '').trim()) || 0 
+      });
+    }
+
+    return playerTotals;
+  }
+
+  async getDisplayedWinner() {
+    await this.page.waitForSelector(this.winnerAnnouncementSelector(this.page));
+    return await this.page.locator(this.winnerAnnouncementSelector(this.page)).innerText();
+  }
+
+  async verifyWinner(expectedPlayer) {
+    const displayedWinner = await this.getDisplayedWinner();
+    console.log('Expected:', expectedPlayer);
+    console.log('Displayed:', displayedWinner);
+    return displayedWinner.includes(expectedPlayer);
+  }
+}

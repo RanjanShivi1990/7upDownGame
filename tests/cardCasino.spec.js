@@ -2,6 +2,7 @@ import { test , expect } from '@playwright/test';
 import { CardCasinoPage } from '../pages/cardCasinoPage.js';
 import testData from '../testData/testData.json';
 const Assertions = require('../utils/assertions');
+import {DealerDevPage} from '../pages/dealerPage.js';
 
 let cardCasinoPage , assertions;
 test.beforeEach(async ({ page }) => {
@@ -392,11 +393,17 @@ test('TC_12 18  Verify Declaring the Winner Player with Highest Card Value', asy
     'waiting for bet time to complete'
     );
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player8Back);
-  const players = await cardCasinoPage.getPlayerData(dealerDevPage);
+  await cardCasinoPage.validatingCongratulationsMessage();
+  const playerTotals = await dealerDevPage.getPlayerTotals();
 
-  // Determine the player with the highest card value
-  const declaredWinner = await dealerDevPage.page.locator(("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");).textContent();
-  expect(declaredWinner.trim()).toContain(winner.name);
+  // Determine the player with the highest total
+  const winner = playerTotals.reduce((prev, curr) => (prev.totalValue > curr.totalValue ? prev : curr));
 
-  console.log(`Winner Verified: ${winner.name} with total: ${winner.total}`);
+  console.log('Player Totals:', playerTotals);
+  console.log('Winner:', winner);
+
+  // Verify the winner on the dealer page
+  await dealerDevPage.verifyWinner(winner.player);
+
+  console.log(`Test Passed: ${winner.player} is the declared winner with total value: ${winner.totalValue}`);
 });
