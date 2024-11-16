@@ -12,16 +12,21 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.body = page.locator('body');
     this.dealerUsernameInputField = (page) =>
       page.getByPlaceholder('Enter your username');
-    //this.playerNameSelectors = (page, player) =>page.locator(`//span[text()='${player}`);
     this.playerAndTotalValueInDealerPage = (page, player, value) =>
       page.locator(
         `//span[text()='Player ${player}']/following-sibling::span[contains(text(),'Total=>${value}')]  `
       );
-      this.winnerTextAndWinningPattern = (page, player) =>
-        page.locator(
-          `//span[text()='${player}']/following-sibling::span[text()='WINNER']`
-        );
+        // Player card value locators
+    this.playerCardSelectors = (page ,player) => page.locator
+     (`//div[contains(@class, 'player') and text()='Player ${player}']//following-sibling::span[contains(@class, 'card-value')]`);
 
+    // Player totals locators (used for the test)
+    this.playerTotalSelectors = (page,player) =>page.locator
+      (`//span[text()='Player ${player}']/following-sibling::span[contains(text(), 'Total=>')]`);
+
+    this.winnerAnnouncement = (page) => page.locator
+    ("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");
+    
     this.dealerPasswordInputField = (page) =>
       page.getByPlaceholder('Enter your password');
 
@@ -30,6 +35,7 @@ exports.CardCasinoPage = class CardCasinoPage {
 
     this.cardCasinoPageDealerPage = (page) =>
       page.getByRole('link', { name: 'Casino32' });
+
     this.MarketExceedsLimitMesg = this.page.getByText(
       'Bet amount exceeds the maximum bet limit'
     );
@@ -66,9 +72,9 @@ exports.CardCasinoPage = class CardCasinoPage {
       .first();
 
     this.pleaseWaitForNextRoundMessage = this.page.getByText('Please wait for next round');
-    this.balanceAmount = this.page.locator(
-      'div[id="balanceAmountContainer"] span'
-    );
+    this.balanceAmount = this.page.locator
+    (" //div[contains(@class,'flex items-end justify-between w-full')]//div[1]//span[2]");
+     
 
     this.betTimeText = this.page.getByText('Bet Time');
     this.suspendedText = (page) => page.getByText('SUSPENDED');
@@ -78,8 +84,7 @@ exports.CardCasinoPage = class CardCasinoPage {
     this.drawMessage = (page) => page.getByText('Draw');
     this.lastWinAmount =this.page.locator(`//span[text()='Last Win']//span/span`);
     this.totalBetAmount = this.page.locator(
-      "//span[text()='Total Bet']/following-sibling::span"
-    );
+      "(//span[contains(@class,'flex items-center gap-1')])[1]");
     this.totalWinAmount = (page) =>
       page.locator("//span[text()='Total ']//span");
     this.newGameButton = (page) =>
@@ -400,13 +405,11 @@ async clickingOnDoubleButtonInLoop(numberOfLoop) {
     await executeStep(this.doublButton, 'click', 'click on double button');
   }
 }
-async readingBetAmount(page){
-  let betAmount = await this.totalBetAmount.innerText();
-  betAmount = betAmount.replaceAll(',', '').replaceAll('₹', '');
-  console.log('Total Bet Amount',betAmount);
-  return betAmount;
-
-}
+  async readingBetAmount(page) {
+    let betAmount = await this.totalBetAmount.innerText();
+    betAmount = betAmount.replaceAll(',', '').replaceAll('₹', '');
+    return betAmount;
+  } 
 
   async readingBalanceAmount(page) {
     let balanceAmount = await this.balanceAmount.innerText();
@@ -459,7 +462,7 @@ async validateLossAmountForLay(page, betAmount, market) {
   console.log('Total Loss Amount for Lay',totalLossAmount);
 }
 
-async validatePlayerAndWinningPattern(page, player, value) {
+async validatePlayerAndTotalValue(page, player, value) {
   await this.assertions.assertElementVisible(
     this.closeText(page),
     'Validate close Text is visible'
@@ -474,10 +477,29 @@ async validatePlayerAndWinningPattern(page, player, value) {
       await this.playerAndTotalValueInDealerPage(page,player, value),
       `Validate ${player} is win with pattern ${value} in dealer dev page `
     );
-    await this.assertions.assertElementVisible(
-      await this.winnerTextAndWinningPattern(page, player),
-      `Validate ${player} winner Text in dealer dev page`
-    );
   }
 }
+async attemptToPlaceBet() {
+  const buttons = this.page.locator(this.player10Back);
+
+  for (let i = 0; i < await buttons.count(); i++) {
+    try {
+      await buttons.nth(i).click();
+      console.log(`Clicked on market button ${i + 1}`);
+    } catch (error) {
+      console.log(`Market button ${i + 1} is unclickable or disabled.`);
+    }
+  }
 }
+async verifyMarketButtonsDisabled() {
+    const buttons = this.page.locator(this.player10Back);
+    const buttonCount = await buttons.count();
+
+    for (let i = 0; i < buttonCount; i++) {
+      const isEnabled = await buttons.nth(i).isEnabled();
+      expect(isEnabled).toBe(false, `Market button ${i + 1} should be disabled.`);
+    }
+  }
+}
+
+
