@@ -32,7 +32,7 @@
   },
 "cardCasino":{
     "betOption":{
-      "Player8Back":["D13","S7","C6","H7"],
+      "Player8Back":["D13","S7","C7","H7"],
       "Player8Lay":["D7","S13","C6","H7"],
       "Player9Back":["D8","S13","C7","H6"],
       "Player9Lay":["D13","S7","C8","H6"],

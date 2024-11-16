@@ -392,8 +392,11 @@ test('TC_12 18  Verify Declaring the Winner Player with Highest Card Value', asy
     'waiting for bet time to complete'
     );
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player8Back);
-  await cardCasinoPage.validatingCongratulationsMessage(cardCasinoPage);
-  const players = [8, 9, 10, 11];
-  await cardCasinoPage.verifyWinner(dealerDevPage,players);
+  const players = await cardCasinoPage.getPlayerData(dealerDevPage);
 
+  // Determine the player with the highest card value
+  const declaredWinner = await dealerDevPage.page.locator(("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");).textContent();
+  expect(declaredWinner.trim()).toContain(winner.name);
+
+  console.log(`Winner Verified: ${winner.name} with total: ${winner.total}`);
 });

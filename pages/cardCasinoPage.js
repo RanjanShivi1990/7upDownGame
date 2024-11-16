@@ -17,14 +17,14 @@ exports.CardCasinoPage = class CardCasinoPage {
         `//span[text()='Player ${player}']/following-sibling::span[contains(text(),'Total=>${value}')]  `
       );
         // Player card value locators
-    this.playerCardSelectors = (page ,player) => page.locator
-     (`//div[contains(@class, 'player') and text()='Player ${player}']//following-sibling::span[contains(@class, 'card-value')]`);
+        this.playerNamesSelector  = (page) => page.locator(
+     `//span[text()='Player']`);
 
     // Player totals locators (used for the test)
-    this.playerTotalSelectors = (page,player) =>page.locator
-      (`//span[text()='Player ${player}']/following-sibling::span[contains(text(), 'Total=>')]`);
+    this.playerTotalsSelector = (page) =>page.locator
+      (`//span[text()='Player']/following-sibling::span[contains(text(), 'Total=>')]`);
 
-    this.winnerAnnouncement = (page) => page.locator
+      this.declaredWinnerSelector= (page) => page.locator
     ("(//span[@class='absolute top-0 left-0 z-50 p-3 text-xl font-semibold text-center bg-yellow-500 rounded-br-xl rounded-tl-xl '])[1]");
     
     this.dealerPasswordInputField = (page) =>
@@ -500,6 +500,24 @@ async verifyMarketButtonsDisabled() {
       expect(isEnabled).toBe(false, `Market button ${i + 1} should be disabled.`);
     }
   }
+  async getPlayerData(page) {
+    // Fetch player names using locators
+    const playerNameElements = await this.playerNamesSelector(page).allTextContents();
+    
+    // Fetch player totals using locators
+    const playerTotalElements = await this.playerTotalsSelector(page).allTextContents();
+  
+    // Process the total values to extract integers
+    const playerTotals = playerTotalElements.map(totalText =>
+      parseInt(totalText.replace('Total=>', '').trim(), 10)
+    );
+  
+    // Combine player names and totals into an array of objects
+    return playerNameElements.map((name, index) => ({
+      name: name.trim(),
+      total: playerTotals[index],
+    }));
+  }
+  
 }
-
 
