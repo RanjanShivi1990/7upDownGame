@@ -41,8 +41,8 @@
       "Player11Back":["D8","S7","C6","S13"],
       "Player11Lay":["D7","S6","C13","H7"],
       "CardsForDraw1Round" : ["D9","C6","D8","H7"],
-      "CardsForDraw2Round" : ["C9","S9"],
-      "CardsForDraw3Round" : ["C10","S11"]
+      "CardsForDraw2Round" : ["C10","S9"]
+      
 
 
 }

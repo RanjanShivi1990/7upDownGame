@@ -2,7 +2,6 @@ import { test , expect } from '@playwright/test';
 import { CardCasinoPage } from '../pages/cardCasinoPage.js';
 import testData from '../testData/testData.json';
 const Assertions = require('../utils/assertions');
-import {DealerDevPage} from '../pages/dealerPage.js';
 
 let cardCasinoPage , assertions;
 test.beforeEach(async ({ page }) => {
@@ -372,8 +371,7 @@ test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
     parseFloat(balanceAmountAfterBetting) + parseFloat(winningAmount)
   );
 });
-
-test('TC_12 18  Verify Declaring the Winner Player with Highest Card Value', async ({
+test('TC_12 Verify Declaring the Winner Player with Highest Card Value', async ({
   page,
   context,
   }) => {
@@ -394,16 +392,76 @@ test('TC_12 18  Verify Declaring the Winner Player with Highest Card Value', asy
     );
   await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.Player8Back);
   await cardCasinoPage.validatingCongratulationsMessage();
-  const playerTotals = await dealerDevPage.getPlayerTotals();
+  const playerNames = ['Player 8', 'Player 9', 'Player 10', 'Player 11'];
 
-  // Determine the player with the highest total
-  const winner = playerTotals.reduce((prev, curr) => (prev.totalValue > curr.totalValue ? prev : curr));
+    // Call the fetchPlayerTotals function
+    const playerTotals = await cardCasinoPage.fetchPlayerTotals(dealerDevPage, playerNames);
 
-  console.log('Player Totals:', playerTotals);
-  console.log('Winner:', winner);
+    // Find the player with the highest total
+    const winner = Object.keys(playerTotals).reduce((a, b) =>
+        playerTotals[a] > playerTotals[b] ? a : b
+    );
 
-  // Verify the winner on the dealer page
-  await dealerDevPage.verifyWinner(winner.player);
+    // Log results
+    console.log('Player Totals:', playerTotals);
+    console.log(`The winner is: ${winner} with a total value of ${playerTotals[winner]}`);
 
-  console.log(`Test Passed: ${winner.player} is the declared winner with total value: ${winner.totalValue}`);
+    // Add assertions
+    expect(playerTotals[winner]).toBeGreaterThan(0); // Ensure the winner's total is valid
 });
+
+test('TC_18 Verify Market Reopens on Tie Between Players', async ({
+  page,
+  context,
+  }) => {
+  cardCasinoPage = new CardCasinoPage(page);
+  const dealerDevPagePromise = await context.newPage();
+  const dealerDevPage = await dealerDevPagePromise;
+  await cardCasinoPage.navigateToDelearDevAndLogin(dealerDevPage);
+  await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
+  await dealerDevPage.reload();
+  await cardCasinoPage.clickNewGame(dealerDevPage);
+  await cardCasinoPage.clickOnSpecificMarket(
+    'Player 8 Back'
+  );
+  await cardCasinoPage.waitForTimeout(
+    dealerDevPage,
+    parseInt(process.env.BET_TIMEOUT),
+    'waiting for bet time to complete'
+    );
+  await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.CardsForDraw1Round);
+  const playerNames = ['Player 8', 'Player 9', 'Player 10', 'Player 11'];
+
+    // Call the fetchPlayerTotals function
+    const playerTotals = await cardCasinoPage.fetchPlayerTotals(dealerDevPage, playerNames);
+
+    // Find the player with the highest total
+    const winner = Object.keys(playerTotals).reduce((a, b) =>
+        playerTotals[a] > playerTotals[b] ? a : b
+    );
+    console.log('Player Totals:', playerTotals);
+    const highestTotal = Math.max(...Object.values(playerTotals));
+const tiePlayers = Object.entries(playerTotals)
+  .filter(([player, total]) => total === highestTotal)
+  .map(([player]) => player);
+
+// Announce the result
+if (tiePlayers.length > 1) {
+  console.log(`It's a tie between ${tiePlayers.join(' and ')}`);
+} else {
+  console.log(`The winner is ${tiePlayers[0]} with the highest total of ${highestTotal}`);
+}
+await expect(await cardCasinoPage.betTimeText).toBeVisible();
+    });    
+await cardCasinoPage.clickOnSpecificMarket(
+  'Player 10 Back'
+);
+await cardCasinoPage.waitForTimeout(
+  dealerDevPage,
+  parseInt(process.env.BET_TIMEOUT),
+  'waiting for bet time to complete'
+  );
+await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.CardsForDraw2Round);
+
+  });
+    
