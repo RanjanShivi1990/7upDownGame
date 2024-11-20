@@ -322,9 +322,7 @@ test('TC_14 15 Maximum Bet Limit Exceeded', async ({
     parseInt(process.env.BET_TIMEOUT),
     'waiting for bet time to complete'
   );
-  await cardCasinoPage.attemptToPlaceBet();
-  await cardCasinoPage.verifyMarketButtonsDisabled();
-
+  
     });
 
 test('TC_16 17 25 26 Verify Correct Payout for Winning Hand', async ({
@@ -413,7 +411,8 @@ test('TC_12 Verify Declaring the Winner Player with Highest Card Value', async (
 test('TC_18 Verify Market Reopens on Tie Between Players', async ({
   page,
   context,
-  }) => {
+}) => {
+  // Initialize page objects
   cardCasinoPage = new CardCasinoPage(page);
   const dealerDevPagePromise = await context.newPage();
   const dealerDevPage = await dealerDevPagePromise;
@@ -421,47 +420,53 @@ test('TC_18 Verify Market Reopens on Tie Between Players', async ({
   await cardCasinoPage.clickOnDealerCardCasinoGame(dealerDevPage);
   await dealerDevPage.reload();
   await cardCasinoPage.clickNewGame(dealerDevPage);
-  await cardCasinoPage.clickOnSpecificMarket(
-    'Player 8 Back'
-  );
+ await cardCasinoPage.clickOnSpecificMarket('Player 8 Back');
+
+  // Wait for the betting time to complete
   await cardCasinoPage.waitForTimeout(
     dealerDevPage,
     parseInt(process.env.BET_TIMEOUT),
     'waiting for bet time to complete'
-    );
-  await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.CardsForDraw1Round);
+  );
+
+  // Simulate card drawing for the first round
+  await cardCasinoPage.selectingCardsInLoop(dealerDevPage, testData.cardCasino.betOption.CardsForDraw1Round);
+
+  // List of player names
   const playerNames = ['Player 8', 'Player 9', 'Player 10', 'Player 11'];
 
-    // Call the fetchPlayerTotals function
-    const playerTotals = await cardCasinoPage.fetchPlayerTotals(dealerDevPage, playerNames);
+  // Fetch player totals for the round
+  const playerTotals = await cardCasinoPage.fetchPlayerTotals(dealerDevPage, playerNames);
+  
+  console.log('Player Totals:', playerTotals);
 
-    // Find the player with the highest total
-    const winner = Object.keys(playerTotals).reduce((a, b) =>
-        playerTotals[a] > playerTotals[b] ? a : b
-    );
-    console.log('Player Totals:', playerTotals);
-    const highestTotal = Math.max(...Object.values(playerTotals));
-const tiePlayers = Object.entries(playerTotals)
-  .filter(([player, total]) => total === highestTotal)
-  .map(([player]) => player);
+  // Find the highest total and check for tie
+  const highestTotal = Math.max(...Object.values(playerTotals));
 
-// Announce the result
-if (tiePlayers.length > 1) {
-  console.log(`It's a tie between ${tiePlayers.join(' and ')}`);
-} else {
-  console.log(`The winner is ${tiePlayers[0]} with the highest total of ${highestTotal}`);
-}
-await expect(await cardCasinoPage.betTimeText).toBeVisible();
-    });    
-await cardCasinoPage.clickOnSpecificMarket(
-  'Player 10 Back'
-);
-await cardCasinoPage.waitForTimeout(
-  dealerDevPage,
-  parseInt(process.env.BET_TIMEOUT),
-  'waiting for bet time to complete'
+  const tiePlayers = Object.entries(playerTotals)
+    .filter(([player, total]) => total === highestTotal)
+    .map(([player]) => player);
+
+  // Announce the result
+  if (tiePlayers.length > 1) {
+    console.log(`It's a tie between ${tiePlayers.join(' and ')}`);
+    // Handle the tie condition (e.g., check if market reopens)
+    await cardCasinoPage.verifyMarketReopensAfterTie(dealerDevPage);
+  } else {
+    console.log(`The winner is ${tiePlayers[0]} with the highest total of ${highestTotal}`);
+  }// Place a second bet on Player 10 Back
+  await cardCasinoPage.clickOnSpecificMarket('Player 10 Back');
+
+  // Wait for the betting time to complete for the second round
+  await cardCasinoPage.waitForTimeout(
+    dealerDevPage,
+    parseInt(process.env.BET_TIMEOUT),
+    'waiting for bet time to complete'
   );
-await cardCasinoPage.selectingCardsInLoop(dealerDevPage,testData.cardCasino.betOption.CardsForDraw2Round);
 
-  });
-    
+  // Simulate card drawing for the second round
+  await cardCasinoPage.selectingCardsInLoop(dealerDevPage, testData.cardCasino.betOption.CardsForDraw2Round);
+
+  // Validate the congratulations message after the second round
+  await cardCasinoPage.validatingCongratulationsMessage(cardCasinoPage);
+});

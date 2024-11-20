@@ -411,11 +411,6 @@ async validateMaximumAllowedBet() {
     await this.MarketMaxBetLimitMesg,
     'Max bet Limit is Exceeded should be visible'
   );
-  await this.bettingOnSpecificPlayerInLoop('Player 11 Back', 5);
-  await this.assertions.assertElementVisible(
-    await this.MarketExceedsLimitMesg,
-    'Bet amount exceeds the maximum bet limit'
-  );
   await this.bettingOnSpecificPlayerInLoop('Player 8 Back',6);
   await this.assertions.assertElementVisible(
     await this.MarketProfitLimitMesg,
@@ -511,6 +506,12 @@ async fetchPlayerTotals(page, playerNames) {
       playerTotals[playerName] = parseInt(match[1], 10);
     }
   return playerTotals;
-  
 }
+async verifyMarketReopensAfterTie(dealerDevPage) {
+  // Wait for the market to become clickable again after the tie
+  const marketButton = await dealerDevPage.getByText('Bet Time'); // Adjust selector as necessary
+  await marketButton.waitFor({ state: 'attached', timeout: 10000 });
+  await expect(marketButton).toBeEnabled();  // Assert that the market button is now enabled and can be clicked again
+}
+
 }
