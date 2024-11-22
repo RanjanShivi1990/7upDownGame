@@ -5,7 +5,7 @@ const { executeStep } = require('../utils/action');
 const Assertions = require('../utils/assertions');
 require('dotenv').config();
 
-exports.pokerGamePage = class pokerGamePage {
+exports.PokerGamePage = class PokerGamePage {
   constructor(page) {
     this.page = page;
     this.assertions = new Assertions();
